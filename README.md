@@ -1,1 +1,2 @@
 # Webtechnologien2025
+Das Projekt ist eine webbasierte To-Do-Liste, mit der Benutzer ihre Aufgaben erfassen, verwalten und organisieren können. Ziel ist es, eine benutzerfreundliche Anwendung zu entwickeln, die hilft, den Überblick über anstehende Tätigkeiten zu behalten und Prioritäten zu setzen. Die Aufgaben können hinzugefügt, angezeigt, bearbeitet und gelöscht werden, um eine flexible Planung zu ermöglichen. Das Projekt soll eine einfache, aber nützliche Lösung für den Alltag bieten und grundlegende Webtechnologien praktisch anwenden.

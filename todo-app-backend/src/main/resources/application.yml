@@ -1,1 +1,3 @@
-spring.application.name=todo-app-backend
+spring:
+  application:
+    name: todo-app-backend

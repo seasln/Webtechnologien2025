@@ -1,5 +1,5 @@
 <script setup lang="ts">
-let list = ['String 1', 'String 2', 'String 3'];
+import ForRender from "@/components/ForRender.vue";
 </script>
 
 <template>
@@ -8,7 +8,7 @@ let list = ['String 1', 'String 2', 'String 3'];
     Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
     documentation
   </p>
-  <div v-for="string of list">{{string}}</div>
+  <for-render></for-render>
 </template>
 
 <style scoped></style>

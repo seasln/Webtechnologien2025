@@ -1,4 +1,6 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+let list = ['String 1', 'String 2', 'String 3'];
+</script>
 
 <template>
   <h1>You did it!</h1>
@@ -6,6 +8,7 @@
     Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
     documentation
   </p>
+  <div v-for="string of list">{{string}}</div>
 </template>
 
 <style scoped></style>

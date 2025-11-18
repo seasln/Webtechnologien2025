@@ -1,5 +1,6 @@
 # --- Build Stage ---
-FROM gradle:8.5-jdk17 AS builder
+# Wir nutzen hier gradle mit JDK 21
+FROM gradle:8.10-jdk21 AS builder
 WORKDIR /app
 
 # Copy Gradle files
@@ -11,6 +12,7 @@ COPY gradle ./gradle
 RUN chmod +x gradlew
 
 # Download dependencies
+# Das "|| true" sorgt dafür, dass der Build nicht abbricht, wenn kein Source da ist
 RUN ./gradlew build --no-daemon || true
 
 # Copy source code
@@ -20,7 +22,8 @@ COPY src ./src
 RUN ./gradlew clean build -x test --no-daemon
 
 # --- Run Stage ---
-FROM eclipse-temurin:17-jre
+# Wir nutzen hier das JRE 21 zum Ausführen
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 # Copy the JAR from the builder stage

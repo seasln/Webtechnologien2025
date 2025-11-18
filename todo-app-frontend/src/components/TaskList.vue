@@ -20,7 +20,7 @@
           </button>
           <div class="filter-buttons">
             <button 
-              v-for="filter in viewFilters" 
+              v-for="filter in availableViewFilters" 
               :key="filter"
               :class="['filter-btn', { active: activeViewFilter === filter }]"
               @click="activeViewFilter = filter"
@@ -71,6 +71,17 @@
             </div>
           </div>
         </div>
+        <button class="delete-btn" @click="showDeleteConfirm(task)" title="Delete task">
+          <img src="/icons/delete_icon.png" alt="Delete" class="delete-icon" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Notification -->
+    <div v-if="showSuccessNotification" class="success-notification">
+      <div class="success-content">
+        <span class="success-icon">✓</span>
+        <span class="success-text">Successfully deleted</span>
       </div>
     </div>
 
@@ -78,6 +89,26 @@
       <button class="page-btn">‹</button>
       <span class="page-info">1/1</span>
       <button class="page-btn">›</button>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click="cancelDelete">
+      <div class="modal-content delete-modal" @click.stop>
+        <div class="modal-header">
+          <h2>Delete Task</h2>
+          <button class="close-btn" @click="cancelDelete">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="delete-message">
+            Are you sure you want to delete this task?
+          </p>
+          <p class="delete-task-name">"{{ taskToDelete?.title }}"</p>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="cancelDelete">Cancel</button>
+          <button class="delete-confirm-btn" @click="confirmDelete">Delete</button>
+        </div>
+      </div>
     </div>
 
     <!-- Modal Overlay -->
@@ -168,10 +199,20 @@ export default {
       newTaskTitle: '',
       newTaskProject: 'No Project',
       newTaskDueDate: '',
-      newTaskPriority: ''
+      newTaskPriority: '',
+      showDeleteModal: false,
+      taskToDelete: null,
+      showSuccessNotification: false
     }
   },
   computed: {
+    availableViewFilters() {
+      // Hide "Active" and "Completed" buttons when "completed" filter is selected from sidebar
+      if (this.selectedFilter === 'completed') {
+        return ['All']
+      }
+      return this.viewFilters
+    },
     filteredTasks() {
       let filtered = this.tasks
 
@@ -191,6 +232,14 @@ export default {
     },
     displayedTasks() {
       return this.filteredTasks
+    }
+  },
+  watch: {
+    selectedFilter(newFilter) {
+      // Reset to 'All' when switching to 'completed' filter
+      if (newFilter === 'completed') {
+        this.activeViewFilter = 'All'
+      }
     }
   },
   mounted() {
@@ -283,7 +332,30 @@ export default {
     handleEscapeKey(event) {
       if (event.key === 'Escape' && this.showAddTask) {
         this.closeModal()
+      } else if (event.key === 'Escape' && this.showDeleteModal) {
+        this.cancelDelete()
       }
+    },
+    showDeleteConfirm(task) {
+      this.taskToDelete = task
+      this.showDeleteModal = true
+    },
+    cancelDelete() {
+      this.showDeleteModal = false
+      this.taskToDelete = null
+    },
+    confirmDelete() {
+      if (this.taskToDelete) {
+        this.$emit('delete-task', this.taskToDelete.id)
+        this.cancelDelete()
+        this.showSuccessMessage()
+      }
+    },
+    showSuccessMessage() {
+      this.showSuccessNotification = true
+      setTimeout(() => {
+        this.showSuccessNotification = false
+      }, 3000) // Hide after 3 seconds
     }
   }
 }
@@ -453,9 +525,9 @@ export default {
 }
 
 .filter-btn.active {
-  background: #919191;
+  background: #9571A6;
   color: white;
-  border-color: #919191;
+  border-color: #9571A6;
   font-weight: bold;
 }
 
@@ -470,9 +542,9 @@ export default {
 }
 
 .task-list-container.dark-mode .filter-btn.active {
-  background: #919191;
+  background: #9571A6;
   color: white;
-  border-color: #919191;
+  border-color: #9571A6;
   font-weight: bold;
 }
 
@@ -757,6 +829,50 @@ export default {
   background: #7c3aed;
 }
 
+.delete-message {
+  font-size: 16px;
+  color: #374151;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.task-list-container.dark-mode .delete-message {
+  color: #f1f5f9;
+}
+
+.delete-task-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  text-align: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  word-break: break-word;
+}
+
+.task-list-container.dark-mode .delete-task-name {
+  color: #f1f5f9;
+  background: #2f2f2f;
+}
+
+.delete-confirm-btn {
+  padding: 10px 20px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.delete-confirm-btn:hover {
+  background: #b91c1c;
+}
+
 .tasks-container {
   flex: 1;
   padding: 24px 40px;
@@ -822,6 +938,37 @@ export default {
 
 .task-content {
   flex: 1;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.delete-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+  background: #fee2e2;
+  transform: scale(1.1);
+}
+
+.task-list-container.dark-mode .delete-btn:hover {
+  background: #3a2a2a;
 }
 
 .task-title {
@@ -960,6 +1107,55 @@ export default {
 
 .task-list-container.dark-mode .page-info {
   color: #94a3b8;
+}
+
+.success-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #10b981;
+  color: white;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2000;
+  animation: slideInRight 0.3s ease-out;
+  min-width: 200px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.success-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.success-icon {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.success-text {
+  font-size: 14px;
+  font-weight: 500;
 }
 </style>
 

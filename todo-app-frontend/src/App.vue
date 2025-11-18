@@ -4,15 +4,20 @@
       :tasks="tasks"
       :selectedFilter="selectedFilter"
       :isDarkMode="isDarkMode"
+      :projects="projects"
       @filter-change="handleFilterChange"
+      @add-project="handleAddProject"
+      @delete-project="handleDeleteProject"
     />
     <TaskList 
       :tasks="filteredTasks"
       :selectedFilter="selectedFilter"
       :isDarkMode="isDarkMode"
+      :projects="projects"
       @add-task="handleAddTask"
       @toggle-task="handleToggleTask"
       @delete-task="handleDeleteTask"
+      @update-task="handleUpdateTask"
       @toggle-dark-mode="toggleDarkMode"
     />
   </div>
@@ -32,6 +37,12 @@ export default {
     return {
       selectedFilter: 'all',
       isDarkMode: false,
+      projects: [
+        { name: 'No Project', color: '#9ca3af', isDefault: true },
+        { name: 'Work Projects', color: '#3b82f6' },
+        { name: 'Personal', color: '#10b981' },
+        { name: 'Learning', color: '#9333ea' }
+      ],
       tasks: [
         {
           id: 1,
@@ -77,6 +88,15 @@ export default {
           project: 'Personal',
           priority: null,
           priorityColor: null
+        },
+        {
+          id: 6,
+          title: 'Random task without project',
+          completed: false,
+          dueDate: 'today',
+          project: null,
+          priority: null,
+          priorityColor: null
         }
       ]
     }
@@ -95,10 +115,22 @@ export default {
         return this.tasks.filter(t => t.dueDate === 'this week' || t.dueDate === 'next week')
       } else if (this.selectedFilter.startsWith('project:')) {
         const projectName = this.selectedFilter.replace('project:', '')
+        // For "No Project", show tasks with null or 'No Project' as project
+        if (projectName === 'No Project') {
+          return this.tasks.filter(t => !t.project || t.project === 'No Project')
+        }
         return this.tasks.filter(t => t.project === projectName)
       }
       return this.tasks
     }
+  },
+  mounted() {
+    // Convert all tasks with null project to "No Project"
+    this.tasks.forEach(task => {
+      if (!task.project || task.project === null) {
+        task.project = 'No Project'
+      }
+    })
   },
   methods: {
     handleFilterChange(filter) {
@@ -110,7 +142,7 @@ export default {
         title: task.title,
         completed: false,
         dueDate: task.dueDate || 'no date',
-        project: task.project || 'No Project',
+        project: task.project && task.project !== 'No Project' ? task.project : 'No Project',
         priority: task.priority || null,
         priorityColor: task.priorityColor || null
       })
@@ -127,8 +159,48 @@ export default {
         this.tasks.splice(index, 1)
       }
     },
+    handleUpdateTask(updatedTask) {
+      const task = this.tasks.find(t => t.id === updatedTask.id)
+      if (task) {
+        task.title = updatedTask.title
+        task.project = updatedTask.project && updatedTask.project !== 'No Project' ? updatedTask.project : 'No Project'
+        task.dueDate = updatedTask.dueDate
+      }
+    },
     toggleDarkMode() {
       this.isDarkMode = !this.isDarkMode
+    },
+    handleAddProject(project) {
+      // Check if project name already exists
+      if (!this.projects.find(p => p.name === project.name)) {
+        this.projects.push({
+          name: project.name,
+          color: project.color
+        })
+      }
+    },
+    handleDeleteProject(projectName) {
+      // Prevent deletion of default projects
+      const project = this.projects.find(p => p.name === projectName)
+      if (project && project.isDefault) {
+        return
+      }
+      // Remove project from projects list
+      const projectIndex = this.projects.findIndex(p => p.name === projectName)
+      if (projectIndex !== -1) {
+        // Move all tasks from this project to "No Project"
+        this.tasks.forEach(task => {
+          if (task.project === projectName) {
+            task.project = 'No Project'
+          }
+        })
+        // Remove the project
+        this.projects.splice(projectIndex, 1)
+        // If the deleted project was selected, switch to "all" filter
+        if (this.selectedFilter === `project:${projectName}`) {
+          this.selectedFilter = 'all'
+        }
+      }
     }
   }
 }

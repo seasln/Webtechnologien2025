@@ -52,11 +52,11 @@
             <span class="task-due">Due {{ task.dueDate }}</span>
             <div class="task-tags">
               <span 
-                v-if="task.project"
+                v-if="task.project || task.project === null"
                 class="task-tag"
-                :class="getProjectClass(task.project)"
+                :style="getProjectStyle(task.project)"
               >
-                {{ task.project }}
+                {{ task.project || 'No Project' }}
               </span>
               <span 
                 v-if="task.priority"
@@ -71,9 +71,14 @@
             </div>
           </div>
         </div>
-        <button class="delete-btn" @click="showDeleteConfirm(task)" title="Delete task">
-          <img src="/icons/delete_icon.png" alt="Delete" class="delete-icon" />
-        </button>
+        <div class="task-actions">
+          <button class="edit-btn" @click="showEditTask(task)" title="Edit task">
+            <img src="/icons/edit-icon.png" alt="Edit" class="edit-icon" />
+          </button>
+          <button class="delete-btn" @click="showDeleteConfirm(task)" title="Delete task">
+            <img src="/icons/delete_icon.png" alt="Delete" class="delete-icon" />
+          </button>
+        </div>
       </div>
     </div>
 
@@ -89,6 +94,56 @@
       <button class="page-btn">‹</button>
       <span class="page-info">1/1</span>
       <button class="page-btn">›</button>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>Edit Task</h2>
+          <button class="close-btn" @click="closeEditModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="edit-task-title">Task Title</label>
+            <input 
+              id="edit-task-title"
+              type="text" 
+              placeholder="Task title..." 
+              v-model="editTaskTitle"
+              @keyup.enter="saveTask"
+              class="modal-input"
+              autofocus
+            />
+          </div>
+          <div class="form-group">
+            <label for="edit-task-project">Project</label>
+            <select id="edit-task-project" v-model="editTaskProject" class="modal-select">
+              <option value="No Project">No Project</option>
+              <option 
+                v-for="project in projects" 
+                :key="project.name"
+                :value="project.name"
+              >
+                {{ project.name }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-task-due-date">Due Date</label>
+            <input 
+              id="edit-task-due-date"
+              type="date" 
+              v-model="editTaskDueDate"
+              class="modal-input"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="closeEditModal">Cancel</button>
+          <button class="submit-btn" @click="saveTask">Save Changes</button>
+        </div>
+      </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -135,9 +190,13 @@
             <label for="task-project">Project</label>
             <select id="task-project" v-model="newTaskProject" class="modal-select">
               <option value="No Project">No Project</option>
-              <option value="Work Projects">Work Projects</option>
-              <option value="Personal">Personal</option>
-              <option value="Learning">Learning</option>
+              <option 
+                v-for="project in projects" 
+                :key="project.name"
+                :value="project.name"
+              >
+                {{ project.name }}
+              </option>
             </select>
           </div>
           <div class="form-group">
@@ -188,6 +247,10 @@ export default {
     isDarkMode: {
       type: Boolean,
       default: false
+    },
+    projects: {
+      type: Array,
+      required: true
     }
   },
   data() {
@@ -202,7 +265,12 @@ export default {
       newTaskPriority: '',
       showDeleteModal: false,
       taskToDelete: null,
-      showSuccessNotification: false
+      showSuccessNotification: false,
+      showEditModal: false,
+      taskToEdit: null,
+      editTaskTitle: '',
+      editTaskProject: 'No Project',
+      editTaskDueDate: ''
     }
   },
   computed: {
@@ -263,13 +331,31 @@ export default {
       }
       return titles[this.selectedFilter] || 'All Tasks'
     },
-    getProjectClass(project) {
-      const classes = {
-        'Work Projects': 'project-work',
-        'Personal': 'project-personal',
-        'Learning': 'project-learning'
+    getProjectStyle(projectName) {
+      // Handle null or undefined project names - treat as "No Project"
+      const actualProjectName = projectName || 'No Project'
+      const project = this.projects.find(p => p.name === actualProjectName)
+      if (project) {
+        // Convert hex to RGB for background with opacity
+        let hex = project.color.replace('#', '')
+        // Handle 3-character hex codes
+        if (hex.length === 3) {
+          hex = hex.split('').map(char => char + char).join('')
+        }
+        const r = parseInt(hex.substring(0, 2), 16)
+        const g = parseInt(hex.substring(2, 4), 16)
+        const b = parseInt(hex.substring(4, 6), 16)
+        // Use a lighter version for background
+        return {
+          backgroundColor: `rgba(${r}, ${g}, ${b}, 0.15)`,
+          color: project.color
+        }
       }
-      return classes[project] || ''
+      // Fallback for projects not found
+      return {
+        backgroundColor: '#f3f4f6',
+        color: '#374151'
+      }
     },
     getPriorityClass(priorityColor) {
       const classes = {
@@ -314,7 +400,7 @@ export default {
         
         this.$emit('add-task', {
           title: this.newTaskTitle,
-          project: this.newTaskProject === 'No Project' ? null : this.newTaskProject,
+          project: this.newTaskProject === 'No Project' ? 'No Project' : this.newTaskProject,
           dueDate: formattedDueDate,
           priority: this.newTaskPriority || null,
           priorityColor: priorityColorMap[this.newTaskPriority] || null
@@ -334,6 +420,8 @@ export default {
         this.closeModal()
       } else if (event.key === 'Escape' && this.showDeleteModal) {
         this.cancelDelete()
+      } else if (event.key === 'Escape' && this.showEditModal) {
+        this.closeEditModal()
       }
     },
     showDeleteConfirm(task) {
@@ -356,6 +444,66 @@ export default {
       setTimeout(() => {
         this.showSuccessNotification = false
       }, 3000) // Hide after 3 seconds
+    },
+    showEditTask(task) {
+      this.taskToEdit = task
+      this.editTaskTitle = task.title
+      this.editTaskProject = task.project || 'No Project'
+      // Convert due date format to date input format
+      if (task.dueDate && task.dueDate !== 'no date' && task.dueDate !== 'today' && task.dueDate !== 'tomorrow' && task.dueDate !== 'this week' && task.dueDate !== 'next week') {
+        // If it's already a date string, try to parse it
+        const dateMatch = task.dueDate.match(/\d{4}-\d{2}-\d{2}/)
+        if (dateMatch) {
+          this.editTaskDueDate = dateMatch[0]
+        } else {
+          this.editTaskDueDate = ''
+        }
+      } else {
+        this.editTaskDueDate = ''
+      }
+      this.showEditModal = true
+    },
+    closeEditModal() {
+      this.showEditModal = false
+      this.taskToEdit = null
+      this.editTaskTitle = ''
+      this.editTaskProject = 'No Project'
+      this.editTaskDueDate = ''
+    },
+    saveTask() {
+      if (this.taskToEdit && this.editTaskTitle.trim()) {
+        // Format due date
+        let formattedDueDate = 'no date'
+        if (this.editTaskDueDate) {
+          const selectedDate = new Date(this.editTaskDueDate)
+          const today = new Date()
+          const tomorrow = new Date(today)
+          tomorrow.setDate(tomorrow.getDate() + 1)
+          
+          const diffTime = selectedDate - today
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+          
+          if (diffDays === 0) {
+            formattedDueDate = 'today'
+          } else if (diffDays === 1) {
+            formattedDueDate = 'tomorrow'
+          } else if (diffDays >= 2 && diffDays <= 7) {
+            formattedDueDate = 'this week'
+          } else if (diffDays > 7) {
+            formattedDueDate = 'next week'
+          } else {
+            formattedDueDate = this.editTaskDueDate
+          }
+        }
+        
+        this.$emit('update-task', {
+          id: this.taskToEdit.id,
+          title: this.editTaskTitle.trim(),
+          project: this.editTaskProject === 'No Project' ? 'No Project' : this.editTaskProject,
+          dueDate: formattedDueDate
+        })
+        this.closeEditModal()
+      }
     }
   }
 }
@@ -940,6 +1088,43 @@ export default {
   flex: 1;
 }
 
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.edit-btn:hover {
+  opacity: 1;
+  background: #dbeafe;
+  transform: scale(1.1);
+}
+
+.task-list-container.dark-mode .edit-btn:hover {
+  background: #2a3a4a;
+}
+
 .delete-btn {
   background: none;
   border: none;
@@ -951,8 +1136,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: flex-start;
-  margin-top: 2px;
 }
 
 .delete-icon {
@@ -1022,20 +1205,7 @@ export default {
   font-weight: 500;
 }
 
-.project-work {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.project-personal {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.project-learning {
-  background: #e9d5ff;
-  color: #6b21a8;
-}
+/* Project colors are now dynamic based on project.color */
 
 .priority-high {
   background: #fee2e2;

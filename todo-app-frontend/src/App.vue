@@ -1,15 +1,18 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :class="{ 'dark-mode': isDarkMode }">
     <Sidebar 
       :tasks="tasks"
       :selectedFilter="selectedFilter"
+      :isDarkMode="isDarkMode"
       @filter-change="handleFilterChange"
     />
     <TaskList 
       :tasks="filteredTasks"
       :selectedFilter="selectedFilter"
+      :isDarkMode="isDarkMode"
       @add-task="handleAddTask"
       @toggle-task="handleToggleTask"
+      @toggle-dark-mode="toggleDarkMode"
     />
   </div>
 </template>
@@ -27,6 +30,7 @@ export default {
   data() {
     return {
       selectedFilter: 'all',
+      isDarkMode: false,
       tasks: [
         {
           id: 1,
@@ -88,6 +92,9 @@ export default {
         return this.tasks.filter(t => t.dueDate === 'today')
       } else if (this.selectedFilter === 'week') {
         return this.tasks.filter(t => t.dueDate === 'this week' || t.dueDate === 'next week')
+      } else if (this.selectedFilter.startsWith('project:')) {
+        const projectName = this.selectedFilter.replace('project:', '')
+        return this.tasks.filter(t => t.project === projectName)
       }
       return this.tasks
     }
@@ -112,6 +119,9 @@ export default {
       if (task) {
         task.completed = !task.completed
       }
+    },
+    toggleDarkMode() {
+      this.isDarkMode = !this.isDarkMode
     }
   }
 }
@@ -122,6 +132,12 @@ export default {
   display: flex;
   height: 100vh;
   width: 100%;
+  background: #ffffff;
+  transition: background-color 0.3s ease;
+}
+
+.app-container.dark-mode {
+  background: #181818;
 }
 </style>
 

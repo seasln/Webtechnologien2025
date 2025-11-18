@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar">
+  <div class="sidebar" :class="{ 'dark-mode': isDarkMode }">
     <div class="sidebar-header">
       <div class="logo">
         <img src="/icons/favicon.svg" alt="TaskFlow Logo" class="logo-icon" />
@@ -30,6 +30,8 @@
         v-for="project in projects" 
         :key="project.name"
         class="project-item"
+        :class="{ active: selectedFilter === `project:${project.name}` }"
+        @click="$emit('filter-change', `project:${project.name}`)"
       >
         <span class="project-dot" :style="{ backgroundColor: project.color }"></span>
         <span class="project-name">{{ project.name }}</span>
@@ -61,6 +63,10 @@ export default {
     selectedFilter: {
       type: String,
       default: 'all'
+    },
+    isDarkMode: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -110,11 +116,22 @@ export default {
   flex-direction: column;
   height: 100vh;
   overflow-y: auto;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.sidebar.dark-mode {
+  background: #181818;
+  border-right-color: #282828;
 }
 
 .sidebar-header {
   padding: 24px 20px;
   border-bottom: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.sidebar.dark-mode .sidebar-header {
+  border-bottom-color: #282828;
 }
 
 .logo {
@@ -135,12 +152,22 @@ export default {
   font-weight: 700;
   color: #111827;
   margin: 0;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .logo-text h1 {
+  color: #f1f5f9;
 }
 
 .slogan {
   font-size: 12px;
   color: #6b7280;
   margin: 2px 0 0 0;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .slogan {
+  color: #94a3b8;
 }
 
 .sidebar-nav {
@@ -158,6 +185,7 @@ export default {
   transition: all 0.2s;
   margin-bottom: 4px;
   position: relative;
+  color: #374151;
 }
 
 .nav-item:hover {
@@ -166,7 +194,30 @@ export default {
 
 .nav-item.active {
   background: #f3e8ff;
-  color: #9333ea;
+  color: #9571A6;
+  font-weight: bold;
+}
+
+.nav-item.active .nav-label {
+  font-weight: bold;
+}
+
+.sidebar.dark-mode .nav-item {
+  color: #f1f5f9;
+}
+
+.sidebar.dark-mode .nav-item:hover {
+  background: #282828;
+}
+
+.sidebar.dark-mode .nav-item.active {
+  background: #2f2f2f;
+  color: #9571A6;
+  font-weight: bold;
+}
+
+.sidebar.dark-mode .nav-item.active .nav-label {
+  font-weight: bold;
 }
 
 .nav-icon {
@@ -196,6 +247,12 @@ export default {
   padding: 16px 12px;
   border-top: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.sidebar.dark-mode .projects-section {
+  border-top-color: #282828;
+  border-bottom-color: #282828;
 }
 
 .section-title {
@@ -205,6 +262,11 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 12px 12px;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .section-title {
+  color: #64748b;
 }
 
 .project-item {
@@ -221,6 +283,28 @@ export default {
   background: #f9fafb;
 }
 
+.project-item.active {
+  background: #f3e8ff;
+}
+
+.project-item.active .project-name {
+  color: #9571A6;
+  font-weight: bold;
+}
+
+.sidebar.dark-mode .project-item:hover {
+  background: #282828;
+}
+
+.sidebar.dark-mode .project-item.active {
+  background: #2f2f2f;
+}
+
+.sidebar.dark-mode .project-item.active .project-name {
+  color: #9571A6;
+  font-weight: bold;
+}
+
 .project-dot {
   width: 8px;
   height: 8px;
@@ -231,11 +315,21 @@ export default {
   flex: 1;
   font-size: 14px;
   color: #374151;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .project-name {
+  color: #f1f5f9;
 }
 
 .project-count {
   font-size: 12px;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .project-count {
+  color: #94a3b8;
 }
 
 .user-profile {
@@ -244,6 +338,11 @@ export default {
   align-items: center;
   gap: 12px;
   border-top: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.sidebar.dark-mode .user-profile {
+  border-top-color: #282828;
 }
 
 .profile-avatar img {
@@ -260,11 +359,21 @@ export default {
   font-size: 14px;
   font-weight: 600;
   color: #111827;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .profile-name {
+  color: #f1f5f9;
 }
 
 .profile-plan {
   font-size: 12px;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.sidebar.dark-mode .profile-plan {
+  color: #94a3b8;
 }
 
 .profile-settings {
@@ -273,11 +382,19 @@ export default {
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .profile-settings:hover {
   background: #f3f4f6;
+}
+
+.sidebar.dark-mode .profile-settings {
+  color: #94a3b8;
+}
+
+.sidebar.dark-mode .profile-settings:hover {
+  background: #282828;
 }
 </style>
 

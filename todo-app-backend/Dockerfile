@@ -7,6 +7,9 @@ COPY build.gradle settings.gradle ./
 COPY gradlew ./
 COPY gradle ./gradle
 
+# --- FIX: Ausführungsrechte geben ---
+RUN chmod +x gradlew
+
 # Download dependencies
 RUN ./gradlew build --no-daemon || true
 

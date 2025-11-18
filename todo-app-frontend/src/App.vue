@@ -12,6 +12,7 @@
       :isDarkMode="isDarkMode"
       @add-task="handleAddTask"
       @toggle-task="handleToggleTask"
+      @delete-task="handleDeleteTask"
       @toggle-dark-mode="toggleDarkMode"
     />
   </div>
@@ -83,7 +84,7 @@ export default {
   computed: {
     filteredTasks() {
       if (this.selectedFilter === 'all') {
-        return this.tasks.filter(t => !t.completed)
+        return this.tasks // Return all tasks, let TaskList handle Active/Completed filtering
       } else if (this.selectedFilter === 'completed') {
         return this.tasks.filter(t => t.completed)
       } else if (this.selectedFilter === 'important') {
@@ -118,6 +119,12 @@ export default {
       const task = this.tasks.find(t => t.id === taskId)
       if (task) {
         task.completed = !task.completed
+      }
+    },
+    handleDeleteTask(taskId) {
+      const index = this.tasks.findIndex(t => t.id === taskId)
+      if (index !== -1) {
+        this.tasks.splice(index, 1)
       }
     },
     toggleDarkMode() {

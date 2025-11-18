@@ -1,5 +1,5 @@
 <template>
-  <div class="task-list-container">
+  <div class="task-list-container" :class="{ 'dark-mode': isDarkMode }">
     <div class="header">
       <div class="header-top">
         <div class="header-text">
@@ -11,6 +11,13 @@
             <span class="search-icon">🔍</span>
             <input type="text" placeholder="Search tasks..." v-model="searchQuery" />
           </div>
+          <button 
+            class="dark-mode-btn" 
+            @click="$emit('toggle-dark-mode')" 
+            :title="isDarkMode ? 'Light mode' : 'Dark mode'"
+          >
+            {{ isDarkMode ? '☀️' : '🌙' }}
+          </button>
           <div class="filter-buttons">
             <button 
               v-for="filter in viewFilters" 
@@ -146,6 +153,10 @@ export default {
     selectedFilter: {
       type: String,
       default: 'all'
+    },
+    isDarkMode: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -196,6 +207,10 @@ export default {
         week: 'This Week',
         important: 'Important',
         completed: 'Completed'
+      }
+      if (this.selectedFilter.startsWith('project:')) {
+        const projectName = this.selectedFilter.replace('project:', '')
+        return projectName
       }
       return titles[this.selectedFilter] || 'All Tasks'
     },
@@ -282,11 +297,22 @@ export default {
   background: white;
   height: 100vh;
   overflow-y: auto;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.task-list-container.dark-mode {
+  background: #181818;
+  color: #f1f5f9;
 }
 
 .header {
   padding: 32px 40px 24px;
   border-bottom: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.task-list-container.dark-mode .header {
+  border-bottom-color: #282828;
 }
 
 .header-top {
@@ -300,12 +326,22 @@ export default {
   font-weight: 700;
   color: #111827;
   margin: 0 0 4px 0;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .header-text h1 {
+  color: #f1f5f9;
 }
 
 .subtitle {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .subtitle {
+  color: #94a3b8;
 }
 
 .header-actions {
@@ -325,6 +361,11 @@ export default {
   left: 12px;
   color: #9ca3af;
   font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .search-icon {
+  color: #64748b;
 }
 
 .search-bar input {
@@ -334,12 +375,61 @@ export default {
   font-size: 14px;
   width: 240px;
   background: #f9fafb;
+  color: #111827;
+  transition: all 0.3s ease;
+}
+
+.task-list-container.dark-mode .search-bar input {
+  background: #282828;
+  border-color: #3a3a3a;
+  color: #f1f5f9;
+}
+
+.task-list-container.dark-mode .search-bar input::placeholder {
+  color: #94a3b8;
 }
 
 .search-bar input:focus {
   outline: none;
   border-color: #9333ea;
   background: white;
+}
+
+.task-list-container.dark-mode .search-bar input:focus {
+  background: #2f2f2f;
+  border-color: #a855f7;
+}
+
+.dark-mode-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.dark-mode-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: scale(1.05);
+}
+
+.task-list-container.dark-mode .dark-mode-btn {
+  background: #282828;
+  border-color: #3a3a3a;
+  color: #fbbf24;
+}
+
+.task-list-container.dark-mode .dark-mode-btn:hover {
+  background: #2f2f2f;
+  border-color: #404040;
 }
 
 .filter-buttons {
@@ -355,6 +445,7 @@ export default {
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
+  color: #111827;
 }
 
 .filter-btn:hover {
@@ -362,9 +453,27 @@ export default {
 }
 
 .filter-btn.active {
-  background: #9333ea;
+  background: #919191;
   color: white;
-  border-color: #9333ea;
+  border-color: #919191;
+  font-weight: bold;
+}
+
+.task-list-container.dark-mode .filter-btn {
+  background: #282828;
+  border-color: #3a3a3a;
+  color: #f1f5f9;
+}
+
+.task-list-container.dark-mode .filter-btn:hover {
+  background: #2f2f2f;
+}
+
+.task-list-container.dark-mode .filter-btn.active {
+  background: #919191;
+  color: white;
+  border-color: #919191;
+  font-weight: bold;
 }
 
 .new-task-btn {
@@ -417,6 +526,12 @@ export default {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   animation: slideUp 0.3s ease-out;
   overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+.task-list-container.dark-mode .modal-content {
+  background: #282828;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes slideUp {
@@ -436,6 +551,11 @@ export default {
   align-items: center;
   padding: 24px 24px 20px;
   border-bottom: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.task-list-container.dark-mode .modal-header {
+  border-bottom-color: #3a3a3a;
 }
 
 .modal-header h2 {
@@ -443,6 +563,11 @@ export default {
   font-size: 20px;
   font-weight: 600;
   color: #111827;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .modal-header h2 {
+  color: #f1f5f9;
 }
 
 .close-btn {
@@ -467,6 +592,15 @@ export default {
   color: #111827;
 }
 
+.task-list-container.dark-mode .close-btn {
+  color: #94a3b8;
+}
+
+.task-list-container.dark-mode .close-btn:hover {
+  background: #2f2f2f;
+  color: #f1f5f9;
+}
+
 .modal-body {
   padding: 24px;
 }
@@ -485,6 +619,11 @@ export default {
   font-size: 14px;
   font-weight: 500;
   color: #374151;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .form-group label {
+  color: #f1f5f9;
 }
 
 .modal-input,
@@ -497,6 +636,14 @@ export default {
   background: white;
   transition: all 0.2s;
   box-sizing: border-box;
+  color: #111827;
+}
+
+.task-list-container.dark-mode .modal-input,
+.task-list-container.dark-mode .modal-select {
+  background: #2f2f2f;
+  border-color: #3a3a3a;
+  color: #f1f5f9;
 }
 
 .modal-input:focus,
@@ -504,6 +651,13 @@ export default {
   outline: none;
   border-color: #9333ea;
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+}
+
+.task-list-container.dark-mode .modal-input:focus,
+.task-list-container.dark-mode .modal-select:focus {
+  border-color: #a855f7;
+  background: #353535;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
 }
 
 .modal-select {
@@ -551,6 +705,12 @@ export default {
   padding: 20px 24px;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
+  transition: all 0.3s ease;
+}
+
+.task-list-container.dark-mode .modal-footer {
+  background: #2f2f2f;
+  border-top-color: #3a3a3a;
 }
 
 .cancel-btn {
@@ -568,6 +728,17 @@ export default {
 .cancel-btn:hover {
   background: #f9fafb;
   border-color: #d1d5db;
+}
+
+.task-list-container.dark-mode .cancel-btn {
+  background: #353535;
+  color: #f1f5f9;
+  border-color: #404040;
+}
+
+.task-list-container.dark-mode .cancel-btn:hover {
+  background: #404040;
+  border-color: #4a4a4a;
 }
 
 .submit-btn {
@@ -602,8 +773,18 @@ export default {
   transition: all 0.2s;
 }
 
+.task-list-container.dark-mode .task-item {
+  background: #282828;
+  border-color: #3a3a3a;
+}
+
 .task-item:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.task-list-container.dark-mode .task-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-color: #404040;
 }
 
 .task-item.completed {
@@ -648,11 +829,20 @@ export default {
   font-weight: 500;
   color: #111827;
   margin-bottom: 8px;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .task-title {
+  color: #f1f5f9;
 }
 
 .task-item.completed .task-title {
   text-decoration: line-through;
   color: #9ca3af;
+}
+
+.task-list-container.dark-mode .task-item.completed .task-title {
+  color: #64748b;
 }
 
 .task-meta {
@@ -665,6 +855,11 @@ export default {
 .task-due {
   font-size: 13px;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .task-due {
+  color: #94a3b8;
 }
 
 .task-tags {
@@ -722,6 +917,11 @@ export default {
   align-items: center;
   gap: 16px;
   border-top: 1px solid #e5e7eb;
+  transition: border-color 0.3s ease;
+}
+
+.task-list-container.dark-mode .pagination {
+  border-top-color: #282828;
 }
 
 .page-btn {
@@ -741,9 +941,25 @@ export default {
   border-color: #d1d5db;
 }
 
+.task-list-container.dark-mode .page-btn {
+  background: #282828;
+  border-color: #3a3a3a;
+  color: #94a3b8;
+}
+
+.task-list-container.dark-mode .page-btn:hover {
+  background: #2f2f2f;
+  border-color: #404040;
+}
+
 .page-info {
   font-size: 14px;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.task-list-container.dark-mode .page-info {
+  color: #94a3b8;
 }
 </style>
 

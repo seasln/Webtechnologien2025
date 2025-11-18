@@ -104,16 +104,20 @@
             />
           </div>
           <div class="form-group">
-            <label for="project-color">Project Color</label>
+            <label for="project-color" class="form-label-with-icon">
+              Project Color
+              <img src="/icons/ballpen-color-icon.png" alt="Choose color" class="color-picker-icon" />
+            </label>
             <div class="color-picker-container">
-              <input 
-                id="project-color"
-                type="color" 
-                v-model="newProjectColor"
-                class="color-picker"
-              />
-              <div class="color-preview" :style="{ backgroundColor: newProjectColor }"></div>
-              <span class="color-value">{{ newProjectColor }}</span>
+              <label for="project-color" class="color-picker-label" :style="{ backgroundColor: newProjectColor }">
+                <input 
+                  id="project-color"
+                  type="color" 
+                  v-model="newProjectColor"
+                  class="color-picker-input"
+                />
+              </label>
+              <span class="color-value">{{ newProjectColor.toUpperCase() }}</span>
             </div>
           </div>
         </div>
@@ -735,6 +739,12 @@ export default {
   transition: color 0.3s ease;
 }
 
+.form-label-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .sidebar.dark-mode .form-group label {
   color: #f1f5f9;
 }
@@ -775,41 +785,107 @@ export default {
   gap: 12px;
 }
 
-.color-picker {
-  width: 60px;
+.color-picker-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.color-picker-icon:hover {
+  opacity: 1;
+}
+
+.color-picker-label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
   height: 40px;
-  border: 1px solid #e5e7eb;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
-  background: none;
-  padding: 0;
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.sidebar.dark-mode .color-picker {
+.color-picker-label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.color-picker-label:hover {
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-picker-label:hover::before {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.sidebar.dark-mode .color-picker-label {
   border-color: #3a3a3a;
 }
 
-.color-preview {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  flex-shrink: 0;
+.sidebar.dark-mode .color-picker-label:hover {
+  border-color: #4a4a4a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.sidebar.dark-mode .color-preview {
-  border-color: #3a3a3a;
+.color-picker-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.color-picker-text {
+  position: relative;
+  z-index: 2;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.color-picker-input:focus + .color-picker-text {
+  outline: none;
+}
+
+.color-picker-label:has(.color-picker-input:focus) {
+  outline: 2px solid #9571A6;
+  outline-offset: 2px;
 }
 
 .color-value {
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   font-family: monospace;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
 .sidebar.dark-mode .color-value {
   color: #94a3b8;
+  background: #2a2a2a;
 }
 
 .modal-footer {

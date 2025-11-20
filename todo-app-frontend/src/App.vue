@@ -26,6 +26,7 @@
 <script>
 import Sidebar from './components/Sidebar.vue'
 import TaskList from './components/TaskList.vue'
+import { getAllTodos } from "../api.js";
 
 export default {
   name: 'App',
@@ -43,62 +44,9 @@ export default {
         { name: 'Personal', color: '#10b981' },
         { name: 'Learning', color: '#9333ea' }
       ],
-      tasks: [
-        {
-          id: 1,
-          title: 'Complete project proposal for client meeting',
-          completed: false,
-          dueDate: 'today',
-          project: 'Work Projects',
-          priority: 'High Priority',
-          priorityColor: 'red'
-        },
-        {
-          id: 2,
-          title: 'Review and update website content',
-          completed: false,
-          dueDate: 'tomorrow',
-          project: 'Work Projects',
-          priority: 'Medium Priority',
-          priorityColor: 'yellow'
-        },
-        {
-          id: 3,
-          title: 'Buy groceries for the week',
-          completed: true,
-          dueDate: 'today',
-          project: 'Personal',
-          priority: null,
-          priorityColor: null
-        },
-        {
-          id: 4,
-          title: 'Learn React hooks and context API',
-          completed: false,
-          dueDate: 'next week',
-          project: 'Learning',
-          priority: 'Low Priority',
-          priorityColor: 'light-green'
-        },
-        {
-          id: 5,
-          title: 'Schedule dentist appointment',
-          completed: false,
-          dueDate: 'this week',
-          project: 'Personal',
-          priority: null,
-          priorityColor: null
-        },
-        {
-          id: 6,
-          title: 'Random task without project',
-          completed: false,
-          dueDate: 'today',
-          project: null,
-          priority: null,
-          priorityColor: null
-        }
-      ]
+
+
+      tasks: []
     }
   },
   computed: {
@@ -124,15 +72,39 @@ export default {
       return this.tasks
     }
   },
-  mounted() {
-    // Convert all tasks with null project to "No Project"
-    this.tasks.forEach(task => {
-      if (!task.project || task.project === null) {
-        task.project = 'No Project'
-      }
-    })
+  async mounted() {
+    // todos vom backend laden
+    console.log('Lade Todos vom Backend...')
+    try{
+      const todosFromBackend = await getAllTodos()
+      console.log('✅ Todos vom Backend erhalten:\', todosFromBackend')
+
+      //backend daten in frontend format umwandeln
+      this.tasks = todosFromBackend.map(todo => ({
+        id: todo.id,
+        title: todo.description,
+        completed: todo.done,
+        dueDate: todo.category || 'No Project',
+        priority: todo.priority,
+        priorityColor: this.getPriorityColor(todo.priority)
+      }))
+
+      console.log('✅ Tasks erfolgreich geladen:', this.tasks)
+    } catch (error) {
+      console.error('❌ Fehler beim Laden der Todos:', error)
+      // Fallback: Zeige Fehlermeldung oder lade lokale Dummy-Daten
+      alert('Todos konnten nicht vom Backend geladen werden. Bitte Backend-Verbindung prüfen!')
+    }
   },
   methods: {
+    getPriorityColor(priority){
+      const colorMap = {
+        'High Priority': 'red',
+        'Medium Priority': 'yellow',
+        'Low Priority': 'light-green',
+      }
+      return colorMap[priority] || null
+    },
     handleFilterChange(filter) {
       this.selectedFilter = filter
     },

@@ -9,4 +9,8 @@ public class ToDoEntry {
     private int id;
     private String description;
     private boolean done;
+    private String dueDate;
+    private String category;
+    private String priority;
+
 }

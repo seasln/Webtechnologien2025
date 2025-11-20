@@ -7,7 +7,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/todos")
-@CrossOrigin(origins = "https://webtechnologien2025-frontend-7qhu.onrender.com/")
+@CrossOrigin(origins = "https://webtechnologien2025-frontend-7qhu.onrender.com")
 public class TodoEntryController {
     @GetMapping
     public List<ToDoEntry> getAllTodos() {

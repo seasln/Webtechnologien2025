@@ -77,14 +77,14 @@ export default {
     console.log('Lade Todos vom Backend...')
     try{
       const todosFromBackend = await getAllTodos()
-      console.log('✅ Todos vom Backend erhalten:\', todosFromBackend')
+      console.log('✅ Todos vom Backend erhalten:', todosFromBackend);
 
       //backend daten in frontend format umwandeln
       this.tasks = todosFromBackend.map(todo => ({
         id: todo.id,
         title: todo.description,
         completed: todo.done,
-        dueDate: todo.category || 'No Project',
+        dueDate: todo.dueDate || 'Today',
         priority: todo.priority,
         priorityColor: this.getPriorityColor(todo.priority)
       }))

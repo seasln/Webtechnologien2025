@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://webtechnologien2025-backend.onrender.com/';
+const API_BASE_URL = 'https://webtechnologien2025-backend.onrender.com';
 
 // Alle Todos abrufen
 export async function getAllTodos() {
@@ -43,7 +43,7 @@ export async function getTaskById(id) {
 // Beispiel: Verwendung in deiner App
 export async function loadTasksIntoUI() {
     try {
-        const tasks = await getAllTasks();
+        const tasks = await getAllTodos();
 
         // Hier würdest du die Tasks in deine UI einfügen
         // Beispiel für Vanilla JavaScript:

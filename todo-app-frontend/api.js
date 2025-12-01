@@ -1,5 +1,6 @@
-const API_BASE_URL = 'https://webtechnologien2025-backend.onrender.com';
-
+//npm run dev = localhost
+//npm run build = render url
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // Alle Todos abrufen
 export async function getAllTodos() {
     try {

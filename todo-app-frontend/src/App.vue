@@ -76,7 +76,7 @@ export default {
     // todos vom backend laden
     console.log('Lade Todos vom Backend...')
     try{
-      const todosFromBackend = await getAllTodos()
+      const todosFromBackend = await getAllTodos() //api.js wird aufgerufen
       console.log('✅ Todos vom Backend erhalten:', todosFromBackend);
 
       //backend daten in frontend format umwandeln

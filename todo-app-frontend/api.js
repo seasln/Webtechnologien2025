@@ -1,9 +1,9 @@
 const API_BASE_URL = 'https://webtechnologien2025-backend.onrender.com';
 
-// Alle Todos abrufen
+// Get Route, ruft Todos auf
 export async function getAllTodos() {
     try {
-        const response = await fetch(`${API_BASE_URL}/todos`, {
+        const response = await fetch(`${API_BASE_URL}/todos`, { // Get Request zum Backend
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

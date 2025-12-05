@@ -7,14 +7,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/todos")
-@CrossOrigin(origins = "https://webtechnologien2025-frontend-7qhu.onrender.com")
+@CrossOrigin(origins = {"https://webtechnologien2025-frontend-7qhu.onrender.com", "http://localhost:5173", "http://localhost:3000"})
 public class TodoEntryController {
     @GetMapping
     public List<ToDoEntry> getAllTodos() {
         ToDoEntry toDoEntry1 = new ToDoEntry(1, "Spring Boot Backend erstellen", true, "heute", "Work Project", "hoch");
         ToDoEntry toDoEntry2 = new ToDoEntry(2, "Vue.js Frontend beginnen", false, "übermorgen", "Work Project" , "hoch");
         ToDoEntry toDoEntry3 = new ToDoEntry(3, "Milestone 1 auf Github pushen", false, "morgen" , "Uni" , "niedrig");
-        ToDoEntry toDoEntry4 = new ToDoEntry(3, "Zimmer aufräumen", false, "morgen" , "Privat" , "niedrig");
+        ToDoEntry toDoEntry4 = new ToDoEntry(4, "Zimmer aufräumen", false, "morgen" , "Privat" , "niedrig");
 
 
         return List.of(toDoEntry1, toDoEntry2, toDoEntry3, toDoEntry4);

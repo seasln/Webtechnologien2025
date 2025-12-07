@@ -26,7 +26,7 @@
 <script>
 import Sidebar from './components/Sidebar.vue'
 import TaskList from './components/TaskList.vue'
-import { getAllTodos } from "../api.js";
+import { getAllTodos, createTodo } from "../api.js";
 
 export default {
   name: 'App',
@@ -108,17 +108,34 @@ export default {
     handleFilterChange(filter) {
       this.selectedFilter = filter
     },
-    handleAddTask(task) {
-      this.tasks.push({
-        id: this.tasks.length + 1,
-        title: task.title,
-        completed: false,
-        dueDate: task.dueDate || 'no date',
-        project: task.project && task.project !== 'No Project' ? task.project : 'No Project',
-        priority: task.priority || null,
-        priorityColor: task.priorityColor || null
-      })
-    },
+    async handleAddTask(task) {
+      try {
+        // 1. Todo an Backend schicken → POST /todos
+        const savedTodo = await createTodo({
+          description: task.title,
+          done: false,
+          dueDate: task.dueDate || "today",
+          category: task.project || "No Project",
+          priority: task.priority || "Medium Priority"
+        });
+
+        // 2. Antwort aus Backend ins Frontend-Format umwandeln
+        this.tasks.push({
+          id: savedTodo.id,
+          title: savedTodo.description,
+          completed: savedTodo.done,
+          dueDate: savedTodo.dueDate,
+          project: savedTodo.category,
+          priority: savedTodo.priority,
+          priorityColor: this.getPriorityColor(savedTodo.priority)
+        });
+
+      } catch (error) {
+        console.error("❌ Fehler beim Speichern:", error);
+        alert("Todo konnte nicht gespeichert werden!");
+      }
+    }
+    ,
     handleToggleTask(taskId) {
       const task = this.tasks.find(t => t.id === taskId)
       if (task) {

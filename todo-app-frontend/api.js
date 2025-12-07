@@ -1,6 +1,7 @@
 //npm run dev = localhost
 //npm run build = render url
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 // Alle Todos abrufen
 export async function getAllTodos() {
     try {
@@ -15,9 +16,7 @@ export async function getAllTodos() {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const tasks = await response.json();
-        console.log('Tasks erfolgreich abgerufen:', tasks);
-        return tasks;
+        return await response.json();
     } catch (error) {
         console.error('Fehler beim Abrufen der Tasks:', error);
         throw error;
@@ -33,37 +32,31 @@ export async function getTaskById(id) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const task = await response.json();
-        return task;
+        return await response.json();
     } catch (error) {
         console.error('Fehler beim Abrufen des Tasks:', error);
         throw error;
     }
 }
 
-// Beispiel: Verwendung in deiner App
-export async function loadTasksIntoUI() {
+// Todo speichern (POST)
+export async function createTodo(todo) {
     try {
-        const tasks = await getAllTodos();
+        const response = await fetch(`${API_BASE_URL}/todos`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(todo)
+        });
 
-        // Hier würdest du die Tasks in deine UI einfügen
-        // Beispiel für Vanilla JavaScript:
-        const taskContainer = document.querySelector('.task-list');
-
-        if (taskContainer) {
-            taskContainer.innerHTML = ''; // Leeren
-
-            tasks.forEach(task => {
-                const taskElement = createTaskElement(task);
-                taskContainer.appendChild(taskElement);
-            });
+        if (!response.ok) {
+            throw new Error(`Fehler beim Speichern! Status: ${response.status}`);
         }
 
-        return tasks;
+        return await response.json();
     } catch (error) {
-        console.error('Fehler beim Laden der Tasks:', error);
-        // Zeige Fehlermeldung in der UI
-        alert('Tasks konnten nicht geladen werden. Bitte versuche es später erneut.');
+        console.error("Fehler beim Erstellen eines Todos:", error);
+        throw error;
     }
 }
-

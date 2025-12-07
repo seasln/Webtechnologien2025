@@ -1,16 +1,25 @@
 package de.htw.berlin.todo_app_backend.domain;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@Entity
 @Data
+@NoArgsConstructor
 public class ToDoEntry {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String description;
     private boolean done;
     private String dueDate;
     private String category;
     private String priority;
-
 }

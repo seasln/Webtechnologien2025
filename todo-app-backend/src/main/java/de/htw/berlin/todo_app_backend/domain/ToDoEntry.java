@@ -1,5 +1,6 @@
 package de.htw.berlin.todo_app_backend.domain;
 
+import de.htw.berlin.todo_app_backend.enums.Priority;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -20,7 +23,6 @@ public class ToDoEntry {
     private String title;
     private String description;
     private boolean done;
-    private String dueDate;
-    private String category;
-    private String priority;
+    private LocalDate dueDate;
+    private Priority priority;
 }

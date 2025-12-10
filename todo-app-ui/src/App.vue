@@ -12,9 +12,15 @@
         <v-list-item link title="Future Tasks"></v-list-item>
         <v-list-item link title="Completed"></v-list-item>
       </v-navigation-drawer>
-      <router-view></router-view>
+      <div class="router-container">
+        <router-view></router-view>
+      </div>
     </v-main>
   </v-app>
 </template>
 
-<style scoped></style>
+<style scoped>
+.router-container {
+  padding: 16px;
+}
+</style>

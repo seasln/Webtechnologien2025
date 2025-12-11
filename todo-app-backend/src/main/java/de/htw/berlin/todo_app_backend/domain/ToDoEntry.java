@@ -1,12 +1,12 @@
 package de.htw.berlin.todo_app_backend.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import de.htw.berlin.todo_app_backend.enums.Priority;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -16,10 +16,11 @@ public class ToDoEntry {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @NotNull
+    private String title;
     private String description;
     private boolean done;
-    private String dueDate;
-    private String category;
-    private String priority;
+    private LocalDate dueDate;
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
 }

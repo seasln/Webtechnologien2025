@@ -1,10 +1,7 @@
 package de.htw.berlin.todo_app_backend.domain;
 
 import de.htw.berlin.todo_app_backend.enums.Priority;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,5 +21,6 @@ public class ToDoEntry {
     private String description;
     private boolean done;
     private LocalDate dueDate;
+    @Enumerated(EnumType.STRING)
     private Priority priority;
 }

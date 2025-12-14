@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type {TodoEntry} from "@/domain/todo-entry.ts";
 
-const API_URL = 'http://localhost:8080/todos'
+const API_URL = import.meta.env.VITE_API_BASE_URL + '/todos'
 
 export async function getTodos() {
     const response = await axios.get(API_URL)

@@ -19,7 +19,7 @@ async function createTestTask() {
     done: false,
     priority: PriorityEnum.LOW
   };
-  const newTodo = await addTodo(demoTodo); // Rufe Post Route vom Backend auf
+  await addTodo(demoTodo); // Rufe Post Route vom Backend auf
 }
 </script>
 

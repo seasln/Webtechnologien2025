@@ -28,7 +28,7 @@ public class TodoEntryController {
         return service.getById(id);      // Holt ein Todo aus der DB
     }
 
-    @PostMapping
+    @PostMapping //post route
     public ToDoEntry createTodo(@RequestBody ToDoEntry entry) {
         return service.save(entry);      // Speichert in der DB
     }

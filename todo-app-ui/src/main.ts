@@ -4,9 +4,15 @@ import router from './router'
 
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
+import { VDateInput } from 'vuetify/labs/VDateInput'
+import { de } from 'vuetify/locale'
 import '@mdi/font/css/materialdesignicons.css'
 
-const vuetify = createVuetify()
+const vuetify = createVuetify({
+    components: {
+        VDateInput,
+    }
+})
 
 createApp(App)
     .use(vuetify)

@@ -88,11 +88,11 @@ function closeDialog() {
               v-model="todoForm.description"
               label="Beschreibung"
           ></v-text-field>
-          <v-text-field
+          <v-date-input
               v-model="todoForm.dueDate"
               label="Fällig am"
-              type="date"
-          ></v-text-field>
+              prepend-icon=""
+          ></v-date-input>
           <v-select
               v-model="todoForm.priority"
               label="Priorität"

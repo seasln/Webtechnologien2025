@@ -102,14 +102,11 @@ function closeDialog() {
       </v-card-text>
       <v-card-actions>
         <v-btn
-            class="ms-auto"
-            color="red"
             text="Schließen"
             type="button"
             @click="closeDialog"
         ></v-btn>
         <v-btn
-            class="ms-auto"
             color="primary"
             :disabled="!todoForm.title.trim()"
             text="Erstellen"

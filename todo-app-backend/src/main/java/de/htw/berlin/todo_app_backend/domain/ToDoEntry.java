@@ -23,4 +23,7 @@ public class ToDoEntry {
     private LocalDate dueDate;
     @Enumerated(EnumType.STRING)
     private Priority priority;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 }

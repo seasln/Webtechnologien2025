@@ -12,7 +12,7 @@ public class ToDoEntryService {
     private ToDoEntryRepository repo;
 
     public Iterable<ToDoEntry> getAll() {
-        return repo.findAll();
+        return repo.findAllByOrderByIdDesc();
     }
 
     public ToDoEntry getById(Long id) {

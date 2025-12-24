@@ -6,14 +6,16 @@ import TodoCard from "../components/TodoCard.vue";
 import {PriorityEnum} from "../domain/priority.enum.ts";
 
 const todos = ref<TodoEntry[]>([]);
+const filteredTodos = ref<TodoEntry[]>([]);
 const dialog = ref(false);
 const valid = ref(false);
-const todoForm = ref({
+const emptyTodo = {
   title: '',
   description: '',
-  dueDate: new Date(),
+  dueDate: null,
   priority: PriorityEnum.MEDIUM,
-});
+}
+const todoForm = ref({...emptyTodo});
 
 onMounted(async () => {
   getTodoEntries()
@@ -21,6 +23,9 @@ onMounted(async () => {
 
 async function getTodoEntries() {
   todos.value = await getTodos()
+  // das ist nur ein example
+  // filteredTodos.value = filteredTodos.value.filter(todo => !todo.done);
+  filteredTodos.value = todos.value;
 }
 
 function openNewTodoDialog() {
@@ -36,6 +41,18 @@ async function createTodo() {
   await addTodo(newTodo); // Rufe Post Route vom Backend auf
   getTodoEntries()
 }
+
+function onDialogUpdate(value: boolean) {
+  if (!value) {
+    todoForm.value = {...emptyTodo};
+  }
+}
+
+function closeDialog() {
+  dialog.value = false;
+  onDialogUpdate(false);
+}
+
 </script>
 
 <template>
@@ -48,11 +65,13 @@ async function createTodo() {
   </div>
 
   <div class="todo-card-container">
-    <TodoCard v-for="todo in todos" :key="todo.id" :todo="todo"/>
+    <TodoCard v-for="todo in filteredTodos" :key="todo.id" :todo="todo"
+              @updated-todo="getTodoEntries"/>
   </div>
 
   <v-dialog class="new-todo-dialog"
             v-model="dialog"
+            @update:modelValue="onDialogUpdate"
   >
     <v-card>
       <v-card-title>
@@ -84,7 +103,16 @@ async function createTodo() {
       <v-card-actions>
         <v-btn
             class="ms-auto"
-            text="Ok"
+            color="red"
+            text="Schließen"
+            type="button"
+            @click="closeDialog"
+        ></v-btn>
+        <v-btn
+            class="ms-auto"
+            color="primary"
+            :disabled="!todoForm.title.trim()"
+            text="Erstellen"
             @click="createTodo"
         ></v-btn>
       </v-card-actions>
@@ -105,6 +133,8 @@ async function createTodo() {
 
 .todo-card-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 </style>

@@ -5,6 +5,6 @@ export interface TodoEntry {
     title?: string;
     description?: string;
     done?: boolean;
-    dueDate?: Date;
+    dueDate?: Date | undefined;
     priority?: PriorityEnum;
 }

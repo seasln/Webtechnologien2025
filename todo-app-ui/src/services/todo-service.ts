@@ -13,6 +13,11 @@ export async function addTodo(todo: TodoEntry) {
     return response.data
 }
 
+export async function updateTodo(todo: TodoEntry) {
+    const response = await axios.put(`${API_URL}/${todo.id}`, todo)
+    return response.data
+}
+
 export async function deleteTodo(id: number) {
     await axios.delete(`${API_URL}/${id}`)
 }

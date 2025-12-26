@@ -24,6 +24,32 @@ const todoForm = ref({
   category: null as Category | null,
 });
 
+function formatDueDate(value: string | Date | null | undefined) {
+  if (!value) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day}.${month}.${year}`;
+    }
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return formatDateParts(parsed);
+    }
+    return value;
+  }
+  return formatDateParts(value);
+}
+
+function formatDateParts(date: Date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
 async function todoUpdate() {
   await updateTodo(props.todo);
   emit('updatedTodo');
@@ -69,7 +95,7 @@ function closeDialog() {
           @update:modelValue="todoUpdate"
       ></v-checkbox>
     </v-card-title>
-    <v-card-subtitle v-if="!!todo.dueDate">{{ todo.dueDate }}</v-card-subtitle>
+    <v-card-subtitle v-if="!!todo.dueDate">{{ formatDueDate(todo.dueDate) }}</v-card-subtitle>
     <v-card-subtitle v-if="todo.category?.name" class="category-row">
       <span class="category-dot" :style="{ backgroundColor: todo.category.colorHex || '#000000' }"></span>
       <span>{{ todo.category.name }}</span>

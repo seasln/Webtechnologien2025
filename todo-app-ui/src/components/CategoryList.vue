@@ -97,10 +97,7 @@ async function removeCategory(category: Category) {
       </v-btn>
     </v-card-title>
     <v-card-text>
-      <v-alert v-if="!categories.length" type="info" variant="tonal">
-        Noch keine Kategorien vorhanden.
-      </v-alert>
-      <v-list v-else>
+      <v-list>
         <v-list-item
             v-for="category in categories"
             :key="category.id ?? category.name"

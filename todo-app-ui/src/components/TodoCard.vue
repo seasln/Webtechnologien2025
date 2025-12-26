@@ -23,6 +23,15 @@ const todoForm = ref({
   priority: PriorityEnum.MEDIUM,
   category: null as Category | null,
 });
+const priorityMeta: Record<PriorityEnum, { icon: string; label: string }> = {
+  [PriorityEnum.LOW]: {icon: 'mdi-arrow-down', label: 'Niedrig'},
+  [PriorityEnum.MEDIUM]: {icon: 'mdi-arrow-right', label: 'Mittel'},
+  [PriorityEnum.HIGH]: {icon: 'mdi-arrow-up', label: 'Hoch'},
+};
+const priorityItems = Object.values(PriorityEnum).map((value) => ({
+  value,
+  label: priorityMeta[value].label,
+}));
 
 function formatDueDate(value: string | Date | null | undefined) {
   if (!value) {
@@ -95,10 +104,13 @@ function closeDialog() {
           @update:modelValue="todoUpdate"
       ></v-checkbox>
     </v-card-title>
-    <v-card-subtitle v-if="!!todo.dueDate">{{ formatDueDate(todo.dueDate) }}</v-card-subtitle>
     <v-card-subtitle v-if="todo.category?.name" class="category-row">
       <span class="category-dot" :style="{ backgroundColor: todo.category.colorHex || '#000000' }"></span>
       <span>{{ todo.category.name }}</span>
+    </v-card-subtitle>
+    <v-card-subtitle v-if="!!todo.dueDate">Fällig am: {{ formatDueDate(todo.dueDate) }}</v-card-subtitle>
+    <v-card-subtitle v-if="todo.priority" class="priority-row">
+      Priorität: {{ priorityMeta[todo.priority].label }}
     </v-card-subtitle>
     <v-card-text v-if="!!todo.description">{{ todo.description }}</v-card-text>
 
@@ -122,10 +134,10 @@ function closeDialog() {
               label="Titel"
               required
           ></v-text-field>
-          <v-text-field
+          <v-textarea
               v-model="todoForm.description"
               label="Beschreibung"
-          ></v-text-field>
+          ></v-textarea>
           <v-text-field
               v-model="todoForm.dueDate"
               label="Fällig am"
@@ -143,7 +155,9 @@ function closeDialog() {
           <v-select
               v-model="todoForm.priority"
               label="Priorität"
-              :items="Object.values(PriorityEnum)"
+              :items="priorityItems"
+              item-title="label"
+              item-value="value"
           ></v-select>
         </v-form>
       </v-card-text>
@@ -198,6 +212,10 @@ function closeDialog() {
   height: 12px;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.priority-row {
+  text-transform: capitalize;
 }
 
 .new-todo-dialog {

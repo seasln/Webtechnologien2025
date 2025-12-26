@@ -3,7 +3,7 @@ import type {Category} from "../domain/category.ts";
 import type {TodoEntry} from "../domain/todo-entry.ts";
 import {getCategories} from "../services/category-service.ts";
 import {addTodo, getTodos} from "../services/todo-service.ts";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import TodoCard from "../components/TodoCard.vue";
 import {PriorityEnum} from "../domain/priority.enum.ts";
 
@@ -12,6 +12,16 @@ const filteredTodos = ref<TodoEntry[]>([]);
 const categories = ref<Category[]>([]);
 const dialog = ref(false);
 const valid = ref(false);
+const filterSelection = ref('all');
+const priorityMeta: Record<PriorityEnum, { label: string }> = {
+  [PriorityEnum.LOW]: {label: 'Niedrig'},
+  [PriorityEnum.MEDIUM]: {label: 'Mittel'},
+  [PriorityEnum.HIGH]: {label: 'Hoch'},
+};
+const priorityItems = Object.values(PriorityEnum).map((value) => ({
+  value,
+  label: priorityMeta[value].label,
+}));
 const emptyTodo = {
   title: '',
   description: '',
@@ -25,11 +35,13 @@ onMounted(async () => {
   await Promise.all([getTodoEntries(), fetchCategories()])
 })
 
+watch([todos, filterSelection], () => {
+  applyFilters();
+}, {immediate: true});
+
 async function getTodoEntries() {
   todos.value = await getTodos()
-  // das ist nur ein example
-  // filteredTodos.value = filteredTodos.value.filter(todo => !todo.done);
-  filteredTodos.value = todos.value;
+  applyFilters();
 }
 
 async function fetchCategories() {
@@ -37,7 +49,6 @@ async function fetchCategories() {
 }
 
 function openNewTodoDialog() {
-  // await addTodo(demoTodo); // Rufe Post Route vom Backend auf
   dialog.value = true;
 }
 
@@ -61,6 +72,59 @@ function closeDialog() {
   onDialogUpdate(false);
 }
 
+function applyFilters() {
+  const selection = filterSelection.value;
+  filteredTodos.value = todos.value.filter((todo) => {
+    if (selection !== 'done' && selection !== 'all' && todo.done) {
+      return false;
+    }
+    if (selection === 'open') {
+      return true;
+    }
+    if (selection === 'done') {
+      return todo.done === true;
+    }
+    if (selection === 'today') {
+      return isOnOrBeforeToday(todo.dueDate);
+    }
+    if (selection === 'high') {
+      return todo.priority === PriorityEnum.HIGH;
+    }
+    return true;
+  });
+}
+
+function isOnOrBeforeToday(value: unknown): boolean {
+  const date = toDate(value);
+  if (!date) {
+    return false;
+  }
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  return date <= todayStart;
+}
+
+function toDate(value: unknown): Date | null {
+  if (!value) {
+    return null;
+  }
+  if (value instanceof Date) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return new Date(Number(year), Number(month) - 1, Number(day));
+    }
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+  return null;
+}
+
 </script>
 
 <template>
@@ -70,6 +134,16 @@ function closeDialog() {
       <v-icon start>mdi-plus</v-icon>
       Hinzufügen
     </v-btn>
+  </div>
+
+  <div class="filter-button-container">
+    <v-btn-toggle v-model="filterSelection" mandatory class="filter-toggle">
+      <v-btn value="all">Alle</v-btn>
+      <v-btn value="open">Offen</v-btn>
+      <v-btn value="done">Erledigt</v-btn>
+      <v-btn value="today">Heute</v-btn>
+      <v-btn value="high">Hohe Priorität</v-btn>
+    </v-btn-toggle>
   </div>
 
   <div class="todo-card-container">
@@ -93,10 +167,10 @@ function closeDialog() {
               label="Titel"
               required
           ></v-text-field>
-          <v-text-field
+          <v-textarea
               v-model="todoForm.description"
               label="Beschreibung"
-          ></v-text-field>
+          ></v-textarea>
           <v-date-input
               v-model="todoForm.dueDate"
               label="Fällig am"
@@ -114,7 +188,9 @@ function closeDialog() {
           <v-select
               v-model="todoForm.priority"
               label="Priorität"
-              :items="Object.values(PriorityEnum)"
+              :items="priorityItems"
+              item-title="label"
+              item-value="value"
           ></v-select>
         </v-form>
       </v-card-text>
@@ -144,6 +220,16 @@ function closeDialog() {
 .title-button-container {
   display: flex;
   justify-content: space-between;
+}
+
+.filter-button-container {
+  display: flex;
+  margin: 12px 0 16px;
+}
+
+.filter-toggle {
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .todo-card-container {

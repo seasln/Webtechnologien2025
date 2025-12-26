@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type {Category} from "../domain/category.ts";
 import type {TodoEntry} from "../domain/todo-entry.ts";
 import {updateTodo} from "../services/todo-service.ts";
 import {PriorityEnum} from "../domain/priority.enum.ts";
@@ -6,6 +7,7 @@ import {ref} from "vue";
 
 const props = defineProps<{
   todo: TodoEntry
+  categories: Category[]
 }>();
 
 const emit = defineEmits<{
@@ -19,6 +21,7 @@ const todoForm = ref({
   description: '',
   dueDate: null as string | null,
   priority: PriorityEnum.MEDIUM,
+  category: null as Category | null,
 });
 
 async function todoUpdate() {
@@ -32,6 +35,7 @@ function openEditDialog() {
     description: props.todo.description ?? '',
     dueDate: props.todo.dueDate ?? null,
     priority: props.todo.priority ?? PriorityEnum.MEDIUM,
+    category: props.todo.category ?? null,
   };
   dialog.value = true;
 }
@@ -66,6 +70,10 @@ function closeDialog() {
       ></v-checkbox>
     </v-card-title>
     <v-card-subtitle v-if="!!todo.dueDate">{{ todo.dueDate }}</v-card-subtitle>
+    <v-card-subtitle v-if="todo.category?.name" class="category-row">
+      <span class="category-dot" :style="{ backgroundColor: todo.category.colorHex || '#000000' }"></span>
+      <span>{{ todo.category.name }}</span>
+    </v-card-subtitle>
     <v-card-text v-if="!!todo.description">{{ todo.description }}</v-card-text>
 
     <v-card-actions class="actions">
@@ -97,6 +105,15 @@ function closeDialog() {
               label="Fällig am"
               type="date"
           ></v-text-field>
+          <v-select
+              v-model="todoForm.category"
+              label="Kategorie"
+              :items="props.categories"
+              item-title="name"
+              return-object
+              clearable
+              :disabled="!props.categories.length"
+          ></v-select>
           <v-select
               v-model="todoForm.priority"
               label="Priorität"
@@ -141,6 +158,20 @@ function closeDialog() {
 .actions {
   display: flex;
   justify-content: end;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.category-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .new-todo-dialog {

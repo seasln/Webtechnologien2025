@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type {Category} from "../domain/category.ts";
 import type {TodoEntry} from "../domain/todo-entry.ts";
+import {getCategories} from "../services/category-service.ts";
 import {addTodo, getTodos} from "../services/todo-service.ts";
 import {onMounted, ref} from "vue";
 import TodoCard from "../components/TodoCard.vue";
@@ -7,6 +9,7 @@ import {PriorityEnum} from "../domain/priority.enum.ts";
 
 const todos = ref<TodoEntry[]>([]);
 const filteredTodos = ref<TodoEntry[]>([]);
+const categories = ref<Category[]>([]);
 const dialog = ref(false);
 const valid = ref(false);
 const emptyTodo = {
@@ -14,11 +17,12 @@ const emptyTodo = {
   description: '',
   dueDate: null,
   priority: PriorityEnum.MEDIUM,
+  category: null as Category | null,
 }
 const todoForm = ref({...emptyTodo});
 
 onMounted(async () => {
-  getTodoEntries()
+  await Promise.all([getTodoEntries(), fetchCategories()])
 })
 
 async function getTodoEntries() {
@@ -26,6 +30,10 @@ async function getTodoEntries() {
   // das ist nur ein example
   // filteredTodos.value = filteredTodos.value.filter(todo => !todo.done);
   filteredTodos.value = todos.value;
+}
+
+async function fetchCategories() {
+  categories.value = await getCategories()
 }
 
 function openNewTodoDialog() {
@@ -66,6 +74,7 @@ function closeDialog() {
 
   <div class="todo-card-container">
     <TodoCard v-for="todo in filteredTodos" :key="todo.id" :todo="todo"
+              :categories="categories"
               @updated-todo="getTodoEntries"/>
   </div>
 
@@ -93,6 +102,15 @@ function closeDialog() {
               label="Fällig am"
               prepend-icon=""
           ></v-date-input>
+          <v-select
+              v-model="todoForm.category"
+              label="Kategorie"
+              :items="categories"
+              item-title="name"
+              return-object
+              clearable
+              :disabled="!categories.length"
+          ></v-select>
           <v-select
               v-model="todoForm.priority"
               label="Priorität"

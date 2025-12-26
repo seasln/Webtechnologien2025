@@ -1,3 +1,4 @@
+import type {Category} from "@/domain/category.ts";
 import type {PriorityEnum} from "@/domain/priority.enum.ts";
 
 export interface TodoEntry {
@@ -7,4 +8,5 @@ export interface TodoEntry {
     done?: boolean;
     dueDate?: Date | undefined;
     priority?: PriorityEnum;
+    category?: Category | null;
 }

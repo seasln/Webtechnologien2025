@@ -102,7 +102,7 @@ function closeDialog() {
       </v-card-text>
       <v-card-actions>
         <v-btn
-            text="Schließen"
+            text="Schliessen"
             type="button"
             @click="closeDialog"
         ></v-btn>

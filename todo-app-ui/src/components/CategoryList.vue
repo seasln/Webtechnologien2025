@@ -93,7 +93,7 @@ async function removeCategory(category: Category) {
       <span>Kategorien</span>
       <v-btn @click="openCreateDialog">
         <v-icon start>mdi-plus</v-icon>
-        Hinzufuegen
+        Hinzufügen
       </v-btn>
     </v-card-title>
     <v-card-text>

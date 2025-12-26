@@ -60,7 +60,6 @@ function closeDialog() {
       <v-checkbox
           class="checkbox"
           v-model="todo.done"
-          label="Erledigt"
           density="compact"
           hide-details
           @update:modelValue="todoUpdate"

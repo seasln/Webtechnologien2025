@@ -12,8 +12,8 @@ const drawer = ref(true);
     </v-app-bar>
     <v-navigation-drawer v-model="drawer">
       <v-list density="compact" nav>
-        <v-list-item title="Todos" to="/"></v-list-item>
-        <v-list-item title="Categories" to="/categories"></v-list-item>
+        <v-list-item title="Aufgabenliste" to="/"></v-list-item>
+        <v-list-item title="Kategorien" to="/categories"></v-list-item>
       </v-list>
     </v-navigation-drawer>
     <v-main>

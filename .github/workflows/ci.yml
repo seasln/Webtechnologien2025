@@ -26,7 +26,7 @@ jobs:
         run: chmod +x ./todo-app-backend/gradlew
 
       - name: Run Gradle tests
-        working-directory: backend
+        working-directory: todo-app-backend
         run: ./gradlew test
 
   frontend:
@@ -45,9 +45,9 @@ jobs:
           cache-dependency-path: todo-app-ui/package-lock.json
 
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: todo-app-ui
         run: npm ci
 
       - name: Run Vue tests
-        working-directory: frontend
+        working-directory: todo-app-ui
         run: npm run test

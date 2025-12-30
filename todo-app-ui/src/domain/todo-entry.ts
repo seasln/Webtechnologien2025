@@ -6,7 +6,7 @@ export interface TodoEntry {
     title?: string;
     description?: string;
     done?: boolean;
-    dueDate?: Date | undefined;
+    dueDate?: string;
     priority?: PriorityEnum;
     category?: Category | null;
 }

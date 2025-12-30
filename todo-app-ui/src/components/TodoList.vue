@@ -25,7 +25,7 @@ const priorityItems = Object.values(PriorityEnum).map((value) => ({
 const emptyTodo = {
   title: '',
   description: '',
-  dueDate: null,
+  dueDate: '',
   priority: PriorityEnum.MEDIUM,
   category: null as Category | null,
 }
@@ -170,12 +170,11 @@ function toDate(value: unknown): Date | null {
           <v-textarea
               v-model="todoForm.description"
               label="Beschreibung"
-          ></v-textarea>
-          <v-date-input
+          ></v-textarea>          <v-text-field
               v-model="todoForm.dueDate"
               label="Fällig am"
-              prepend-icon=""
-          ></v-date-input>
+              type="date"
+          ></v-text-field>
           <v-select
               v-model="todoForm.category"
               label="Kategorie"
@@ -239,3 +238,4 @@ function toDate(value: unknown): Date | null {
   gap: 12px;
 }
 </style>
+

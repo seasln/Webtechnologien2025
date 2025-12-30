@@ -19,7 +19,7 @@ const valid = ref(false);
 const todoForm = ref({
   title: '',
   description: '',
-  dueDate: null as string | null,
+  dueDate: '',
   priority: PriorityEnum.MEDIUM,
   category: null as Category | null,
 });
@@ -68,7 +68,7 @@ function openEditDialog() {
   todoForm.value = {
     title: props.todo.title ?? '',
     description: props.todo.description ?? '',
-    dueDate: props.todo.dueDate ?? null,
+    dueDate: props.todo.dueDate ?? '',
     priority: props.todo.priority ?? PriorityEnum.MEDIUM,
     category: props.todo.category ?? null,
   };

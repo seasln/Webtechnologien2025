@@ -141,7 +141,7 @@ function toDate(value: unknown): Date | null {
       <v-btn value="all">Alle</v-btn>
       <v-btn value="open">Offen</v-btn>
       <v-btn value="done">Erledigt</v-btn>
-      <v-btn value="today">Heute</v-btn>
+      <v-btn value="today">Fällig</v-btn>
       <v-btn value="high">Hohe Priorität</v-btn>
     </v-btn-toggle>
   </div>

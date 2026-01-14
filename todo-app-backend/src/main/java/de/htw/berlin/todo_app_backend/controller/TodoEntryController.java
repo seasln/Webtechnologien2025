@@ -1,40 +1,44 @@
 package de.htw.berlin.todo_app_backend.controller;
 
-import de.htw.berlin.todo_app_backend.domain.ToDoEntry;
+import de.htw.berlin.todo_app_backend.dto.ToDoEntryDTO;
+import de.htw.berlin.todo_app_backend.mapper.ToDoEntryMapper;
 import de.htw.berlin.todo_app_backend.service.ToDoEntryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/todos")
+@AllArgsConstructor
 public class TodoEntryController {
 
-    @Autowired
-    private ToDoEntryService service;    // Neuer zentraler Service
+    private final ToDoEntryService service;
+    private final ToDoEntryMapper toDoEntryMapper;
 
     @GetMapping
-    public Iterable<ToDoEntry> getAllTodos() {
-        return service.getAll();         // Holt alles aus der DB
+    public List<ToDoEntryDTO> getAllTodos() {
+        return toDoEntryMapper.toDtoList(service.getAll());
     }
 
     @GetMapping("/{id}")
-    public ToDoEntry getTodoById(@PathVariable Long id) {
-        return service.getById(id);      // Holt ein Todo aus der DB
+    public ToDoEntryDTO getTodoById(@PathVariable Long id) {
+        return toDoEntryMapper.toDto(service.getById(id));
     }
 
-    @PostMapping //post route
-    public ToDoEntry createTodo(@RequestBody ToDoEntry entry) {
-        return service.save(entry);      // Speichert in der DB
+    @PostMapping
+    public ToDoEntryDTO createTodo(@RequestBody ToDoEntryDTO entryDto) {
+        return toDoEntryMapper.toDto(service.save(toDoEntryMapper.toEntity(entryDto)));
     }
 
     @PutMapping("/{id}")
-    public ToDoEntry updateTodo(@PathVariable Long id, @RequestBody ToDoEntry entry) {
-        entry.setId(id);                 // ID aus URL übernehmen
-        return service.save(entry);      // Überschreibt / updated
+    public ToDoEntryDTO updateTodo(@PathVariable Long id, @RequestBody ToDoEntryDTO entryDto) {
+        entryDto.setId(id);
+        return toDoEntryMapper.toDto(service.save(toDoEntryMapper.toEntity(entryDto)));
     }
 
     @DeleteMapping("/{id}")
     public void deleteTodo(@PathVariable Long id) {
-        service.delete(id);              // <-- Löscht aus der DB
+        service.delete(id);
     }
 }

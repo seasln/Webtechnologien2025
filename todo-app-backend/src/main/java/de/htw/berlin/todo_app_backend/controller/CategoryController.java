@@ -1,36 +1,35 @@
 package de.htw.berlin.todo_app_backend.controller;
 
-import de.htw.berlin.todo_app_backend.domain.Category;
+import de.htw.berlin.todo_app_backend.dto.CategoryDTO;
+import de.htw.berlin.todo_app_backend.mapper.CategoryMapper;
 import de.htw.berlin.todo_app_backend.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/categories")
+@AllArgsConstructor
 public class CategoryController {
 
-    @Autowired
-    private CategoryService service;
+    private final CategoryService service;
+    private final CategoryMapper categoryMapper;
 
     @GetMapping
-    public Iterable<Category> getAllCategories() {
-        return service.getAll();
-    }
-
-    @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable Long id) {
-        return service.getById(id);
+    public List<CategoryDTO> getAllCategories() {
+        return categoryMapper.toDtoList(service.getAll());
     }
 
     @PostMapping
-    public Category createCategory(@RequestBody Category category) {
-        return service.save(category);
+    public CategoryDTO createCategory(@RequestBody CategoryDTO categoryDto) {
+        return categoryMapper.toDto(service.save(categoryMapper.toEntity(categoryDto)));
     }
 
     @PutMapping("/{id}")
-    public Category updateCategory(@PathVariable Long id, @RequestBody Category category) {
-        category.setId(id);
-        return service.save(category);
+    public CategoryDTO updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDto) {
+        categoryDto.setId(id);
+        return categoryMapper.toDto(service.save(categoryMapper.toEntity(categoryDto)));
     }
 
     @DeleteMapping("/{id}")

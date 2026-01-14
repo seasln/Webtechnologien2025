@@ -5,13 +5,15 @@ import de.htw.berlin.todo_app_backend.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CategoryService {
 
     @Autowired
     private CategoryRepository repo;
 
-    public Iterable<Category> getAll() {
+    public List<Category> getAll() {
         return repo.findAllByOrderByIdDesc();
     }
 

@@ -5,13 +5,15 @@ import de.htw.berlin.todo_app_backend.repository.ToDoEntryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ToDoEntryService {
 
     @Autowired
     private ToDoEntryRepository repo;
 
-    public Iterable<ToDoEntry> getAll() {
+    public List<ToDoEntry> getAll() {
         return repo.findAllByOrderByIdDesc();
     }
 

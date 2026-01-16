@@ -3,6 +3,7 @@ package de.htw.berlin.todo_app_backend.controller;
 import de.htw.berlin.todo_app_backend.dto.ToDoEntryDTO;
 import de.htw.berlin.todo_app_backend.mapper.ToDoEntryMapper;
 import de.htw.berlin.todo_app_backend.service.ToDoEntryService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,12 +28,12 @@ public class TodoEntryController {
     }
 
     @PostMapping
-    public ToDoEntryDTO createTodo(@RequestBody ToDoEntryDTO entryDto) {
+    public ToDoEntryDTO createTodo(@Valid @RequestBody ToDoEntryDTO entryDto) {
         return toDoEntryMapper.toDto(service.save(toDoEntryMapper.toEntity(entryDto)));
     }
 
     @PutMapping("/{id}")
-    public ToDoEntryDTO updateTodo(@PathVariable Long id, @RequestBody ToDoEntryDTO entryDto) {
+    public ToDoEntryDTO updateTodo(@PathVariable Long id, @Valid @RequestBody ToDoEntryDTO entryDto) {
         entryDto.setId(id);
         return toDoEntryMapper.toDto(service.save(toDoEntryMapper.toEntity(entryDto)));
     }

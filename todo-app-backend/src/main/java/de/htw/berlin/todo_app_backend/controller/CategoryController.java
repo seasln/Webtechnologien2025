@@ -3,6 +3,7 @@ package de.htw.berlin.todo_app_backend.controller;
 import de.htw.berlin.todo_app_backend.dto.CategoryDTO;
 import de.htw.berlin.todo_app_backend.mapper.CategoryMapper;
 import de.htw.berlin.todo_app_backend.service.CategoryService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +23,12 @@ public class CategoryController {
     }
 
     @PostMapping
-    public CategoryDTO createCategory(@RequestBody CategoryDTO categoryDto) {
+    public CategoryDTO createCategory(@Valid @RequestBody CategoryDTO categoryDto) {
         return categoryMapper.toDto(service.save(categoryMapper.toEntity(categoryDto)));
     }
 
     @PutMapping("/{id}")
-    public CategoryDTO updateCategory(@PathVariable Long id, @RequestBody CategoryDTO categoryDto) {
+    public CategoryDTO updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDto) {
         categoryDto.setId(id);
         return categoryMapper.toDto(service.save(categoryMapper.toEntity(categoryDto)));
     }

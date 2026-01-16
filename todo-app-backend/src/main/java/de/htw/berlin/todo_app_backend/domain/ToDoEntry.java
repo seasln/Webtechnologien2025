@@ -3,6 +3,7 @@ package de.htw.berlin.todo_app_backend.domain;
 import de.htw.berlin.todo_app_backend.enums.Priority;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,7 +18,9 @@ public class ToDoEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
+    @Size(max = 25)
     private String title;
+    @Size(max = 200)
     private String description;
     private boolean done;
     private LocalDate dueDate;

@@ -13,6 +13,8 @@ const categories = ref<Category[]>([]);
 const dialog = ref(false);
 const valid = ref(false);
 const filterSelection = ref('all');
+const titleError = ref('');
+const descriptionError = ref('');
 const priorityMeta: Record<PriorityEnum, { label: string }> = {
   [PriorityEnum.LOW]: {label: 'Niedrig'},
   [PriorityEnum.MEDIUM]: {label: 'Mittel'},
@@ -52,7 +54,28 @@ function openNewTodoDialog() {
   dialog.value = true;
 }
 
+function validateForm(): boolean {
+  titleError.value = '';
+  descriptionError.value = '';
+  
+  if (todoForm.value.title && todoForm.value.title.length > 25) {
+    titleError.value = 'Maximum of 25 characters allowed';
+    return false;
+  }
+  
+  if (todoForm.value.description && todoForm.value.description.length > 200) {
+    descriptionError.value = 'Maximum of 200 characters allowed';
+    return false;
+  }
+  
+  return true;
+}
+
 async function createTodo() {
+  if (!validateForm()) {
+    return;
+  }
+  
   dialog.value = false;
   const newTodo: TodoEntry = {
     ...todoForm.value
@@ -166,10 +189,20 @@ function toDate(value: unknown): Date | null {
               v-model="todoForm.title"
               label="Titel"
               required
+              maxlength="25"
+              :error-messages="titleError"
+              :hint="todoForm.title.length === 25 ? 'Character limit reached' : ''"
+              persistent-hint
+              @input="titleError = todoForm.title.length > 25 ? 'Maximum of 25 characters allowed' : ''"
           ></v-text-field>
           <v-textarea
               v-model="todoForm.description"
               label="Beschreibung"
+              maxlength="200"
+              :error-messages="descriptionError"
+              :hint="todoForm.description && todoForm.description.length === 200 ? 'Character limit reached' : ''"
+              persistent-hint
+              @input="descriptionError = todoForm.description && todoForm.description.length > 200 ? 'Maximum of 200 characters allowed' : ''"
           ></v-textarea>          <v-text-field
               v-model="todoForm.dueDate"
               label="Fällig am"
@@ -201,7 +234,7 @@ function toDate(value: unknown): Date | null {
         ></v-btn>
         <v-btn
             color="primary"
-            :disabled="!todoForm.title.trim()"
+            :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (todoForm.description && todoForm.description.length > 200)"
             text="Erstellen"
             @click="createTodo"
         ></v-btn>

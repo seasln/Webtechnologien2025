@@ -7,6 +7,7 @@ const categories = ref<Category[]>([]);
 const dialog = ref(false);
 const isEditing = ref(false);
 const valid = ref(false);
+const nameError = ref('');
 const emptyForm = {
   name: '',
   colorHex: '#4f46e5',
@@ -56,7 +57,22 @@ function resetForm() {
   isEditing.value = false;
 }
 
+function validateForm(): boolean {
+  nameError.value = '';
+  
+  if (categoryForm.value.name && categoryForm.value.name.length > 25) {
+    nameError.value = 'Maximum of 25 characters allowed';
+    return false;
+  }
+  
+  return true;
+}
+
 async function saveCategory() {
+  if (!validateForm()) {
+    return;
+  }
+  
   const payload: Category = {
     name: categoryForm.value.name.trim(),
     colorHex: categoryForm.value.colorHex.trim(),
@@ -139,6 +155,11 @@ async function removeCategory(category: Category) {
               v-model="categoryForm.name"
               label="Name"
               required
+              maxlength="25"
+              :error-messages="nameError"
+              :hint="categoryForm.name.length === 25 ? 'Character limit reached' : ''"
+              persistent-hint
+              @input="nameError = categoryForm.name.length > 25 ? 'Maximum of 25 characters allowed' : ''"
           ></v-text-field>
           <v-text-field
               v-model="categoryForm.colorHex"
@@ -164,7 +185,7 @@ async function removeCategory(category: Category) {
         ></v-btn>
         <v-btn
             color="primary"
-            :disabled="!categoryForm.name.trim() || !categoryForm.colorHex.trim()"
+            :disabled="!categoryForm.name.trim() || !categoryForm.colorHex.trim() || categoryForm.name.length > 25"
             :text="isEditing ? 'Speichern' : 'Erstellen'"
             @click="saveCategory"
         ></v-btn>

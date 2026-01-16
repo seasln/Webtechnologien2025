@@ -90,6 +90,10 @@ function onDialogUpdate(value: boolean) {
   }
 }
 
+function isTodoValid() {
+  return !todoForm.value.title.trim() || todoForm.value.title.length > 25 || (todoForm.value.description && todoForm.value.description.length > 200);
+}
+
 function closeDialog() {
   dialog.value = false;
   onDialogUpdate(false);
@@ -234,7 +238,7 @@ function toDate(value: unknown): Date | null {
         ></v-btn>
         <v-btn
             color="primary"
-            :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (todoForm.description && todoForm.description.length > 200)"
+            :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (!!todoForm.description && todoForm.description.length > 200)"
             text="Erstellen"
             @click="createTodo"
         ></v-btn>

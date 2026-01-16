@@ -202,7 +202,7 @@ function closeDialog() {
         ></v-btn>
         <v-btn
             color="primary"
-            :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (todoForm.description && todoForm.description.length > 200)"
+            :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (!!todoForm.description && todoForm.description.length > 200)"
             text="Speichern"
             @click="saveEdit"
         ></v-btn>

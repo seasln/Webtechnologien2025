@@ -14,6 +14,7 @@ const categories = ref<Category[]>([]);
 const dialog = ref(false);
 const valid = ref(false);
 const filterSelection = ref('all');
+const searchQuery = ref('');
 const titleError = ref('');
 const descriptionError = ref('');
 const priorityMeta: Record<PriorityEnum, { label: string }> = {
@@ -39,7 +40,7 @@ onMounted(async () => {
   await Promise.all([getTodoEntries(), fetchCategories()])
 })
 
-watch([todos, filterSelection], () => {
+watch([todos, filterSelection, searchQuery], () => {
   applyFilters();
 }, {immediate: true});
 
@@ -111,24 +112,34 @@ function closeDialog() {
 
 function applyFilters() {
   const selection = filterSelection.value;
+  const query = (searchQuery.value ?? '').trim().toLowerCase();
   filteredTodos.value = todos.value.filter((todo) => {
     if (selection !== 'done' && selection !== 'all' && todo.done) {
       return false;
     }
     if (selection === 'open') {
-      return true;
+      return matchesQuery(todo, query);
     }
     if (selection === 'done') {
-      return todo.done === true;
+      return todo.done === true && matchesQuery(todo, query);
     }
     if (selection === 'today') {
-      return isOnOrBeforeToday(todo.dueDate);
+      return isOnOrBeforeToday(todo.dueDate) && matchesQuery(todo, query);
     }
     if (selection === 'high') {
-      return todo.priority === PriorityEnum.HIGH;
+      return todo.priority === PriorityEnum.HIGH && matchesQuery(todo, query);
     }
-    return true;
+    return matchesQuery(todo, query);
   });
+}
+
+function matchesQuery(todo: TodoEntry, query: string) {
+  if (!query) {
+    return true;
+  }
+  const title = todo.title?.toLowerCase() ?? '';
+  const description = todo.description?.toLowerCase() ?? '';
+  return title.includes(query) || description.includes(query);
 }
 
 function isOnOrBeforeToday(value: unknown): boolean {
@@ -181,6 +192,17 @@ function toDate(value: unknown): Date | null {
       <v-btn value="today">Fällig</v-btn>
       <v-btn value="high">Hohe Priorität</v-btn>
     </v-btn-toggle>
+    <v-text-field
+        v-model="searchQuery"
+        label="Suche"
+        placeholder="Titel oder Beschreibung"
+        density="compact"
+        variant="outlined"
+        clearable
+        @click:clear="searchQuery = ''"
+        hide-details
+        class="search-input"
+    ></v-text-field>
   </div>
 
   <div class="todo-card-container">
@@ -269,12 +291,20 @@ function toDate(value: unknown): Date | null {
 
 .filter-button-container {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin: 12px 0 16px;
+  gap: 12px;
 }
 
 .filter-toggle {
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.search-input {
+  min-width: 220px;
+  max-width: 320px;
 }
 
 .todo-card-container {

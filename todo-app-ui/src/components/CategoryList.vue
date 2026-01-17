@@ -69,7 +69,6 @@ function validateForm(): boolean {
   nameError.value = '';
   
   if (categoryForm.value.name && categoryForm.value.name.length > 25) {
-    nameError.value = 'Maximum of 25 characters allowed';
     return false;
   }
   
@@ -184,9 +183,8 @@ async function confirmDelete() {
               required
               maxlength="25"
               :error-messages="nameError"
-              :hint="categoryForm.name.length === 25 ? 'Character limit reached' : ''"
+              :hint="categoryForm.name.length === 25 ? 'Maximal 25 Zeichen erlaubt' : ''"
               persistent-hint
-              @input="nameError = categoryForm.name.length > 25 ? 'Maximum of 25 characters allowed' : ''"
           ></v-text-field>
           <v-text-field
               v-model="categoryForm.colorHex"

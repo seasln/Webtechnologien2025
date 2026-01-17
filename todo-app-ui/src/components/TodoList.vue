@@ -290,144 +290,155 @@ function toDate(value: unknown): Date | null {
 </script>
 
 <template>
-  <div class="title-button-container">
-    <h1>Aufgabenliste</h1>
-    <v-btn @click="openNewTodoDialog">
-      <v-icon start>mdi-plus</v-icon>
-      Hinzufügen
-    </v-btn>
-  </div>
-
-  <div class="filter-button-container">
-    <div class="filter-controls">
-      <v-btn-toggle v-model="filterSelection" mandatory class="filter-toggle">
-        <v-btn value="all">Alle</v-btn>
-        <v-btn value="open">Offen</v-btn>
-        <v-btn value="done">Erledigt</v-btn>
-        <v-btn value="today">Fällig</v-btn>
-        <v-btn value="high">Hohe Priorität</v-btn>
-      </v-btn-toggle>
-    </div>
-    <div class="sort-controls">
-      <span class="sort-label">Sortieren</span>
-      <v-btn-toggle v-model="sortSelection" mandatory class="sort-toggle">
-        <v-btn value="createdAt">Erstellt</v-btn>
-        <v-btn value="dueDate">Fällig</v-btn>
-        <v-btn value="priority">Priorität</v-btn>
-        <v-btn value="title">Titel</v-btn>
-      </v-btn-toggle>
-      <v-btn
-          icon
-          size="small"
-          class="sort-direction"
-          :aria-label="sortDirectionLabel"
-          @click="toggleSortDirection"
-      >
-        <v-icon size="18">{{ sortDirectionIcon }}</v-icon>
+  <div class="todo-list">
+    <div class="title-button-container">
+      <h1>Aufgabenliste</h1>
+      <v-btn @click="openNewTodoDialog">
+        <v-icon start>mdi-plus</v-icon>
+        Hinzufügen
       </v-btn>
     </div>
-    <v-text-field
-        v-model="searchQuery"
-        label="Suche"
-        placeholder="Titel oder Beschreibung"
-        density="compact"
-        variant="outlined"
-        clearable
-        @click:clear="searchQuery = ''"
-        hide-details
-        class="search-input"
-    ></v-text-field>
-  </div>
 
-  <div v-if="totalTodos" class="progress-row">
-    <div class="progress-label">
-      Erledigt {{ completedTodos }} / {{ totalTodos }}
+    <div class="filter-button-container">
+      <div class="filter-controls">
+        <v-btn-toggle v-model="filterSelection" mandatory class="filter-toggle">
+          <v-btn value="all">Alle</v-btn>
+          <v-btn value="open">Offen</v-btn>
+          <v-btn value="done">Erledigt</v-btn>
+          <v-btn value="today">Fällig</v-btn>
+          <v-btn value="high">Hohe Priorität</v-btn>
+        </v-btn-toggle>
+      </div>
+      <div class="sort-controls">
+        <span class="sort-label">Sortieren</span>
+        <v-btn-toggle v-model="sortSelection" mandatory class="sort-toggle">
+          <v-btn value="createdAt">Erstellt</v-btn>
+          <v-btn value="dueDate">Fällig</v-btn>
+          <v-btn value="priority">Priorität</v-btn>
+          <v-btn value="title">Titel</v-btn>
+        </v-btn-toggle>
+        <v-btn
+            icon
+            size="small"
+            class="sort-direction"
+            :aria-label="sortDirectionLabel"
+            @click="toggleSortDirection"
+        >
+          <v-icon size="18">{{ sortDirectionIcon }}</v-icon>
+        </v-btn>
+      </div>
+      <v-text-field
+          v-model="searchQuery"
+          label="Suche"
+          placeholder="Titel oder Beschreibung"
+          density="compact"
+          variant="outlined"
+          clearable
+          @click:clear="searchQuery = ''"
+          hide-details
+          class="search-input"
+      ></v-text-field>
     </div>
-    <v-progress-linear
-        :model-value="progressPercent"
-        color="green"
-        height="8"
-        rounded
-    ></v-progress-linear>
+
+    <div v-if="totalTodos" class="progress-row">
+      <div class="progress-label">
+        Erledigt {{ completedTodos }} / {{ totalTodos }}
+      </div>
+      <v-progress-linear
+          :model-value="progressPercent"
+          color="green"
+          height="8"
+          rounded
+      ></v-progress-linear>
+    </div>
+
+    <div class="todo-scroll">
+      <div class="todo-card-container">
+        <TodoCard v-for="todo in filteredTodos" :key="todo.id" :todo="todo"
+                  :categories="categories"
+                  @updated-todo="getTodoEntries"/>
+      </div>
+    </div>
+
+    <v-dialog class="new-todo-dialog"
+              v-model="dialog"
+              @update:modelValue="onDialogUpdate"
+    >
+      <v-card>
+        <v-card-title>
+          Todo hinzufügen
+        </v-card-title>
+        <v-card-text>
+          <v-form v-model="valid">
+            <v-text-field
+                v-model="todoForm.title"
+                label="Titel"
+                required
+                maxlength="25"
+                :error-messages="titleError"
+                :hint="todoForm.title.length === 25 ? 'Maximal 25 Zeichen erlaubt' : ''"
+                persistent-hint
+            ></v-text-field>
+            <v-textarea
+                v-model="todoForm.description"
+                label="Beschreibung"
+                maxlength="200"
+                :error-messages="descriptionError"
+                :hint="todoForm.description && todoForm.description.length === 200 ? 'Maximal 200 Zeichen erlaubt' : ''"
+                persistent-hint
+            ></v-textarea>
+            <v-text-field
+                v-model="todoForm.dueDate"
+                label="Fällig am"
+                type="date"
+            ></v-text-field>
+            <v-select
+                v-model="todoForm.category"
+                label="Kategorie"
+                :items="categories"
+                item-title="name"
+                return-object
+                clearable
+                :disabled="!categories.length"
+            ></v-select>
+            <v-select
+                v-model="todoForm.priority"
+                label="Priorität"
+                :items="priorityItems"
+                item-title="label"
+                item-value="value"
+            ></v-select>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+              text="Schliessen"
+              type="button"
+              @click="closeDialog"
+          ></v-btn>
+          <v-btn
+              color="primary"
+              :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (!!todoForm.description && todoForm.description.length > 200)"
+              text="Erstellen"
+              @click="createTodo"
+          ></v-btn>
+        </v-card-actions>
+
+      </v-card>
+    </v-dialog>
   </div>
-
-  <div class="todo-card-container">
-    <TodoCard v-for="todo in filteredTodos" :key="todo.id" :todo="todo"
-              :categories="categories"
-              @updated-todo="getTodoEntries"/>
-  </div>
-
-  <v-dialog class="new-todo-dialog"
-            v-model="dialog"
-            @update:modelValue="onDialogUpdate"
-  >
-    <v-card>
-      <v-card-title>
-        Todo hinzufügen
-      </v-card-title>
-      <v-card-text>
-        <v-form v-model="valid">
-          <v-text-field
-              v-model="todoForm.title"
-              label="Titel"
-              required
-              maxlength="25"
-              :error-messages="titleError"
-              :hint="todoForm.title.length === 25 ? 'Maximal 25 Zeichen erlaubt' : ''"
-              persistent-hint
-          ></v-text-field>
-          <v-textarea
-              v-model="todoForm.description"
-              label="Beschreibung"
-              maxlength="200"
-              :error-messages="descriptionError"
-              :hint="todoForm.description && todoForm.description.length === 200 ? 'Maximal 200 Zeichen erlaubt' : ''"
-              persistent-hint
-          ></v-textarea>
-          <v-text-field
-              v-model="todoForm.dueDate"
-              label="Fällig am"
-              type="date"
-          ></v-text-field>
-          <v-select
-              v-model="todoForm.category"
-              label="Kategorie"
-              :items="categories"
-              item-title="name"
-              return-object
-              clearable
-              :disabled="!categories.length"
-          ></v-select>
-          <v-select
-              v-model="todoForm.priority"
-              label="Priorität"
-              :items="priorityItems"
-              item-title="label"
-              item-value="value"
-          ></v-select>
-        </v-form>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn
-            text="Schliessen"
-            type="button"
-            @click="closeDialog"
-        ></v-btn>
-        <v-btn
-            color="primary"
-            :disabled="!todoForm.title.trim() || todoForm.title.length > 25 || (!!todoForm.description && todoForm.description.length > 200)"
-            text="Erstellen"
-            @click="createTodo"
-        ></v-btn>
-      </v-card-actions>
-
-    </v-card>
-  </v-dialog>
 </template>
 
 <style scoped>
 .new-todo-dialog {
   width: 400px;
+}
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: calc(100vh - var(--v-layout-top, 0px) - var(--v-layout-bottom, 0px) - 32px);
 }
 
 .title-button-container {
@@ -510,6 +521,12 @@ function toDate(value: unknown): Date | null {
 .search-input {
   min-width: 220px;
   max-width: 320px;
+}
+
+.todo-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .todo-card-container {

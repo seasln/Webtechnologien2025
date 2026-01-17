@@ -37,5 +37,11 @@ const {snackbarState} = useSnackbar();
 .router-container {
   padding: 16px;
 }
+</style>
 
+<style>
+body,
+.v-application {
+  color: #ffffff;
+}
 </style>

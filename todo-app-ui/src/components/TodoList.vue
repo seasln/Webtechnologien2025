@@ -3,7 +3,7 @@ import type {Category} from "../domain/category.ts";
 import type {TodoEntry} from "../domain/todo-entry.ts";
 import {getCategories} from "../services/category-service.ts";
 import {addTodo, getTodos} from "../services/todo-service.ts";
-import {onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import TodoCard from "../components/TodoCard.vue";
 import {PriorityEnum} from "../domain/priority.enum.ts";
 import {useSnackbar} from "@/util/useSnackbar";
@@ -35,6 +35,14 @@ const emptyTodo = {
 }
 const todoForm = ref({...emptyTodo});
 const {showSnackbar, showError} = useSnackbar();
+const totalTodos = computed(() => todos.value.length);
+const completedTodos = computed(() => todos.value.filter((todo) => todo.done).length);
+const progressPercent = computed(() => {
+  if (!totalTodos.value) {
+    return 0;
+  }
+  return Math.round((completedTodos.value / totalTodos.value) * 100);
+});
 
 onMounted(async () => {
   await Promise.all([getTodoEntries(), fetchCategories()])
@@ -205,6 +213,18 @@ function toDate(value: unknown): Date | null {
     ></v-text-field>
   </div>
 
+  <div v-if="totalTodos" class="progress-row">
+    <div class="progress-label">
+      Erledigt {{ completedTodos }} / {{ totalTodos }}
+    </div>
+    <v-progress-linear
+        :model-value="progressPercent"
+        color="green"
+        height="8"
+        rounded
+    ></v-progress-linear>
+  </div>
+
   <div class="todo-card-container">
     <TodoCard v-for="todo in filteredTodos" :key="todo.id" :todo="todo"
               :categories="categories"
@@ -300,6 +320,18 @@ function toDate(value: unknown): Date | null {
 .filter-toggle {
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.progress-row {
+  margin: 8px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .search-input {

@@ -164,6 +164,7 @@ async function confirmDelete() {
       <span class="category-dot" :style="{ backgroundColor: todo.category.colorHex || '#000000' }"></span>
       <span>{{ todo.category.name }}</span>
     </v-card-subtitle>
+    <v-card-subtitle v-if="!!todo.createdAt">Erstellt am: {{ formatDueDate(todo.createdAt) }}</v-card-subtitle>
     <v-card-subtitle v-if="!!todo.dueDate">Fällig am: {{ formatDueDate(todo.dueDate) }}</v-card-subtitle>
     <v-card-subtitle v-if="todo.priority" class="priority-row">
       Priorität: {{ priorityMeta[todo.priority].label }}

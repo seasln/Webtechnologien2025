@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +69,25 @@ class ToDoEntryServiceTest {
         ToDoEntry result = service.save(entry);
 
         assertThat(result).isSameAs(entry);
+        verify(repo).save(entry);
+    }
+
+    @Test
+    void save_preservesCreatedAtOnUpdate() {
+        ToDoEntry existing = new ToDoEntry();
+        existing.setId(5L);
+        existing.setCreatedAt(LocalDate.now().minusDays(1));
+        when(repo.findById(5L)).thenReturn(Optional.of(existing));
+
+        ToDoEntry entry = new ToDoEntry();
+        entry.setId(5L);
+        entry.setTitle("Updated");
+        when(repo.save(entry)).thenReturn(entry);
+
+        ToDoEntry result = service.save(entry);
+
+        assertThat(result.getCreatedAt()).isEqualTo(existing.getCreatedAt());
+        verify(repo).findById(5L);
         verify(repo).save(entry);
     }
 

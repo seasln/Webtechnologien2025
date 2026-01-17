@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -58,6 +59,7 @@ class TodoEntryControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.title").value("Buy milk"))
                 .andExpect(jsonPath("$.priority").value("HIGH"))
+                .andExpect(jsonPath("$.createdAt").value(notNullValue()))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -104,7 +106,8 @@ class TodoEntryControllerIntegrationTest {
                 .andExpect(jsonPath("$.title").value("New"))
                 .andExpect(jsonPath("$.description").value("Updated"))
                 .andExpect(jsonPath("$.done").value(true))
-                .andExpect(jsonPath("$.priority").value("MEDIUM"));
+                .andExpect(jsonPath("$.priority").value("MEDIUM"))
+                .andExpect(jsonPath("$.createdAt").value(notNullValue()));
 
         ToDoEntry refreshed = repository.findById(saved.getId()).orElseThrow();
         assertThat(refreshed.getTitle()).isEqualTo("New");

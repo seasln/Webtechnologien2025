@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -29,4 +30,13 @@ public class ToDoEntry {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+    @Column(nullable = false, updatable = false)
+    private LocalDate createdAt;
+
+    @PrePersist
+    void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDate.now();
+        }
+    }
 }

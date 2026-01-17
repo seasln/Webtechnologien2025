@@ -14,6 +14,8 @@ const categories = ref<Category[]>([]);
 const dialog = ref(false);
 const valid = ref(false);
 const filterSelection = ref('all');
+const sortSelection = ref<'createdAt' | 'dueDate' | 'priority' | 'title'>('createdAt');
+const sortDirection = ref<'asc' | 'desc'>('desc');
 const searchQuery = ref('');
 const titleError = ref('');
 const descriptionError = ref('');
@@ -21,6 +23,11 @@ const priorityMeta: Record<PriorityEnum, { label: string }> = {
   [PriorityEnum.LOW]: {label: 'Niedrig'},
   [PriorityEnum.MEDIUM]: {label: 'Mittel'},
   [PriorityEnum.HIGH]: {label: 'Hoch'},
+};
+const priorityRank: Record<PriorityEnum, number> = {
+  [PriorityEnum.LOW]: 1,
+  [PriorityEnum.MEDIUM]: 2,
+  [PriorityEnum.HIGH]: 3,
 };
 const priorityItems = Object.values(PriorityEnum).map((value) => ({
   value,
@@ -43,12 +50,18 @@ const progressPercent = computed(() => {
   }
   return Math.round((completedTodos.value / totalTodos.value) * 100);
 });
+const sortDirectionIcon = computed(() =>
+    sortDirection.value === 'asc' ? 'mdi-sort-ascending' : 'mdi-sort-descending',
+);
+const sortDirectionLabel = computed(() =>
+    sortDirection.value === 'asc' ? 'Aufsteigend' : 'Absteigend',
+);
 
 onMounted(async () => {
   await Promise.all([getTodoEntries(), fetchCategories()])
 })
 
-watch([todos, filterSelection, searchQuery], () => {
+watch([todos, filterSelection, searchQuery, sortSelection, sortDirection], () => {
   applyFilters();
 }, {immediate: true});
 
@@ -121,7 +134,7 @@ function closeDialog() {
 function applyFilters() {
   const selection = filterSelection.value;
   const query = (searchQuery.value ?? '').trim().toLowerCase();
-  filteredTodos.value = todos.value.filter((todo) => {
+  const filtered = todos.value.filter((todo) => {
     if (selection !== 'done' && selection !== 'all' && todo.done) {
       return false;
     }
@@ -139,6 +152,7 @@ function applyFilters() {
     }
     return matchesQuery(todo, query);
   });
+  filteredTodos.value = sortTodos(filtered, sortSelection.value, sortDirection.value);
 }
 
 function matchesQuery(todo: TodoEntry, query: string) {
@@ -148,6 +162,98 @@ function matchesQuery(todo: TodoEntry, query: string) {
   const title = todo.title?.toLowerCase() ?? '';
   const description = todo.description?.toLowerCase() ?? '';
   return title.includes(query) || description.includes(query);
+}
+
+function sortTodos(
+    list: TodoEntry[],
+    sortKey: 'createdAt' | 'dueDate' | 'priority' | 'title',
+    direction: 'asc' | 'desc',
+) {
+  const sorted = [...list];
+  sorted.sort((a, b) => compareTodos(a, b, sortKey, direction));
+  return sorted;
+}
+
+function compareTodos(
+    a: TodoEntry,
+    b: TodoEntry,
+    sortKey: 'createdAt' | 'dueDate' | 'priority' | 'title',
+    direction: 'asc' | 'desc',
+) {
+  switch (sortKey) {
+    case 'createdAt':
+      return compareDates(a.createdAt, b.createdAt, direction);
+    case 'dueDate':
+      return compareDates(a.dueDate, b.dueDate, direction);
+    case 'priority':
+      return compareNumbers(
+          a.priority ? priorityRank[a.priority] : null,
+          b.priority ? priorityRank[b.priority] : null,
+          direction,
+      );
+    case 'title':
+      return compareStrings(a.title, b.title, direction);
+    default:
+      return 0;
+  }
+}
+
+function compareDates(aValue: unknown, bValue: unknown, direction: 'asc' | 'desc') {
+  const aDate = toDate(aValue);
+  const bDate = toDate(bValue);
+  if (!aDate && !bDate) {
+    return 0;
+  }
+  if (!aDate) {
+    return 1;
+  }
+  if (!bDate) {
+    return -1;
+  }
+  const diff = aDate.getTime() - bDate.getTime();
+  return direction === 'asc' ? diff : -diff;
+}
+
+function compareNumbers(
+    aValue: number | null | undefined,
+    bValue: number | null | undefined,
+    direction: 'asc' | 'desc',
+) {
+  if (aValue == null && bValue == null) {
+    return 0;
+  }
+  if (aValue == null) {
+    return 1;
+  }
+  if (bValue == null) {
+    return -1;
+  }
+  const diff = aValue - bValue;
+  return direction === 'asc' ? diff : -diff;
+}
+
+function compareStrings(
+    aValue: string | null | undefined,
+    bValue: string | null | undefined,
+    direction: 'asc' | 'desc',
+) {
+  const a = (aValue ?? '').trim().toLowerCase();
+  const b = (bValue ?? '').trim().toLowerCase();
+  if (!a && !b) {
+    return 0;
+  }
+  if (!a) {
+    return 1;
+  }
+  if (!b) {
+    return -1;
+  }
+  const diff = a.localeCompare(b);
+  return direction === 'asc' ? diff : -diff;
+}
+
+function toggleSortDirection() {
+  sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
 }
 
 function isOnOrBeforeToday(value: unknown): boolean {
@@ -193,13 +299,33 @@ function toDate(value: unknown): Date | null {
   </div>
 
   <div class="filter-button-container">
-    <v-btn-toggle v-model="filterSelection" mandatory class="filter-toggle">
-      <v-btn value="all">Alle</v-btn>
-      <v-btn value="open">Offen</v-btn>
-      <v-btn value="done">Erledigt</v-btn>
-      <v-btn value="today">Fällig</v-btn>
-      <v-btn value="high">Hohe Priorität</v-btn>
-    </v-btn-toggle>
+    <div class="filter-controls">
+      <v-btn-toggle v-model="filterSelection" mandatory class="filter-toggle">
+        <v-btn value="all">Alle</v-btn>
+        <v-btn value="open">Offen</v-btn>
+        <v-btn value="done">Erledigt</v-btn>
+        <v-btn value="today">Fällig</v-btn>
+        <v-btn value="high">Hohe Priorität</v-btn>
+      </v-btn-toggle>
+    </div>
+    <div class="sort-controls">
+      <span class="sort-label">Sortieren</span>
+      <v-btn-toggle v-model="sortSelection" mandatory class="sort-toggle">
+        <v-btn value="createdAt">Erstellt</v-btn>
+        <v-btn value="dueDate">Fällig</v-btn>
+        <v-btn value="priority">Priorität</v-btn>
+        <v-btn value="title">Titel</v-btn>
+      </v-btn-toggle>
+      <v-btn
+          icon
+          size="small"
+          class="sort-direction"
+          :aria-label="sortDirectionLabel"
+          @click="toggleSortDirection"
+      >
+        <v-icon size="18">{{ sortDirectionIcon }}</v-icon>
+      </v-btn>
+    </div>
     <v-text-field
         v-model="searchQuery"
         label="Suche"
@@ -313,13 +439,60 @@ function toDate(value: unknown): Date | null {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   margin: 12px 0 16px;
   gap: 12px;
 }
 
+.filter-controls {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .filter-toggle {
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
+}
+
+.filter-toggle :deep(.v-btn) {
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 0.75rem;
+}
+
+.sort-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sort-controls {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.sort-toggle {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sort-toggle :deep(.v-btn) {
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 0.75rem;
+}
+
+.sort-direction {
+  min-width: 32px;
 }
 
 .progress-row {

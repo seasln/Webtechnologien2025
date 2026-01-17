@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +22,5 @@ public class ToDoEntryDTO {
     private LocalDate dueDate;
     private Priority priority;
     private CategoryDTO category;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 }

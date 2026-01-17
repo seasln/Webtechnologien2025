@@ -8,7 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -76,7 +77,7 @@ class ToDoEntryServiceTest {
     void save_preservesCreatedAtOnUpdate() {
         ToDoEntry existing = new ToDoEntry();
         existing.setId(5L);
-        existing.setCreatedAt(LocalDateTime.now().minusDays(1));
+        existing.setCreatedAt(OffsetDateTime.now(ZoneId.of("Europe/Berlin")).minusDays(1));
         when(repo.findById(5L)).thenReturn(Optional.of(existing));
 
         ToDoEntry entry = new ToDoEntry();

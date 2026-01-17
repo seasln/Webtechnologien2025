@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Data
@@ -30,13 +31,13 @@ public class ToDoEntry {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime createdAt;
 
     @PrePersist
     void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = OffsetDateTime.now(ZoneId.of("Europe/Berlin"));
         }
     }
 }

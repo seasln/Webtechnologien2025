@@ -70,7 +70,6 @@ describe('CategoryList', () => {
         const deleteCategory = service.deleteCategory as ReturnType<typeof vi.fn>
 
         getCategories.mockResolvedValue([])
-        vi.spyOn(window, 'confirm').mockReturnValueOnce(true)
 
         const wrapper = mount(CategoryList, {
             global: {stubs: vuetifyStubs, renderStubDefaultSlot: true},
@@ -79,7 +78,8 @@ describe('CategoryList', () => {
         await flushPromises()
 
         const vm = wrapper.vm as any
-        await vm.removeCategory({id: 9, name: 'Old', colorHex: '#ffffff'})
+        vm.removeCategory({id: 9, name: 'Old', colorHex: '#ffffff'})
+        await vm.confirmDelete()
 
         expect(deleteCategory).toHaveBeenCalledWith(9)
     })

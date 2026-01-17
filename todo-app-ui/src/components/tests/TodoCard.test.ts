@@ -6,6 +6,7 @@ import {vuetifyStubs} from '../../test/vuetify-stubs'
 
 vi.mock('../../services/todo-service.ts', () => ({
     updateTodo: vi.fn(),
+    deleteTodo: vi.fn(),
 }))
 
 describe('TodoCard', () => {
@@ -73,6 +74,28 @@ describe('TodoCard', () => {
         await (wrapper.vm as any).todoUpdate()
 
         expect(updateTodo).toHaveBeenCalledWith(todo)
+        expect(wrapper.emitted('updatedTodo')).toHaveLength(1)
+    })
+
+    it('deletes the todo and emits an event', async () => {
+        const todo = {
+            id: 4,
+            title: 'Remove old task',
+            done: false,
+            priority: PriorityEnum.LOW,
+        }
+
+        const wrapper = mount(TodoCard, {
+            props: {todo, categories: []},
+            global: {stubs: vuetifyStubs, renderStubDefaultSlot: true},
+        })
+
+        const service = await import('../../services/todo-service.ts')
+        const deleteTodo = service.deleteTodo as ReturnType<typeof vi.fn>
+
+        await (wrapper.vm as any).confirmDelete()
+
+        expect(deleteTodo).toHaveBeenCalledWith(4)
         expect(wrapper.emitted('updatedTodo')).toHaveLength(1)
     })
 })

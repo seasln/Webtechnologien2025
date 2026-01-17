@@ -2,7 +2,9 @@ package de.htw.berlin.todo_app_backend.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htw.berlin.todo_app_backend.domain.Category;
+import de.htw.berlin.todo_app_backend.domain.ToDoEntry;
 import de.htw.berlin.todo_app_backend.repository.CategoryRepository;
+import de.htw.berlin.todo_app_backend.repository.ToDoEntryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +36,12 @@ class CategoryControllerIntegrationTest {
     @Autowired
     private CategoryRepository repository;
 
+    @Autowired
+    private ToDoEntryRepository todoRepository;
+
     @BeforeEach
     void setUp() {
+        todoRepository.deleteAll();
         repository.deleteAll();
     }
 
@@ -113,5 +119,24 @@ class CategoryControllerIntegrationTest {
                 .andExpect(status().isOk());
 
         assertThat(repository.findById(saved.getId())).isEmpty();
+    }
+
+    @Test
+    void deleteCategory_clearsTodoCategory() throws Exception {
+        Category category = new Category();
+        category.setName("Work");
+        category.setColorHex("#abcdef");
+        Category savedCategory = repository.save(category);
+
+        ToDoEntry entry = new ToDoEntry();
+        entry.setTitle("Task");
+        entry.setCategory(savedCategory);
+        ToDoEntry savedEntry = todoRepository.save(entry);
+
+        mockMvc.perform(delete("/categories/{id}", savedCategory.getId()))
+                .andExpect(status().isOk());
+
+        ToDoEntry refreshed = todoRepository.findById(savedEntry.getId()).orElseThrow();
+        assertThat(refreshed.getCategory()).isNull();
     }
 }

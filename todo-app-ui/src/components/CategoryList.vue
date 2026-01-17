@@ -5,6 +5,7 @@ import {addCategory, deleteCategory, getCategories, updateCategory} from "../ser
 
 const categories = ref<Category[]>([]);
 const dialog = ref(false);
+const deleteDialog = ref(false);
 const isEditing = ref(false);
 const valid = ref(false);
 const nameError = ref('');
@@ -14,6 +15,7 @@ const emptyForm = {
 };
 const categoryForm = ref({...emptyForm});
 const editingId = ref<number | null>(null);
+const categoryToDelete = ref<Category | null>(null);
 
 onMounted(() => {
   fetchCategories()
@@ -91,15 +93,24 @@ async function saveCategory() {
 }
 
 async function removeCategory(category: Category) {
-  if (category.id == null) {
+  categoryToDelete.value = category;
+  deleteDialog.value = true;
+}
+
+function closeDeleteDialog() {
+  deleteDialog.value = false;
+  categoryToDelete.value = null;
+}
+
+async function confirmDelete() {
+  const category = categoryToDelete.value;
+  if (!category?.id) {
+    closeDeleteDialog();
     return;
   }
-  const confirmed = window.confirm(`Kategorie "${category.name}" wirklich loeschen?`);
-  if (!confirmed) {
-    return;
-  }
-  await deleteCategory(category.id)
-  await fetchCategories()
+  await deleteCategory(category.id);
+  closeDeleteDialog();
+  await fetchCategories();
 }
 </script>
 
@@ -192,6 +203,29 @@ async function removeCategory(category: Category) {
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog class="delete-category-dialog"
+            v-model="deleteDialog"
+  >
+    <v-card>
+      <v-card-title>Kategorie loeschen</v-card-title>
+      <v-card-text>
+        Möchtest du diese Kategorie dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+      </v-card-text>
+      <v-card-actions>
+        <v-btn
+            text="Abbrechen"
+            type="button"
+            @click="closeDeleteDialog"
+        ></v-btn>
+        <v-btn
+            color="red"
+            text="Löschen"
+            @click="confirmDelete"
+        ></v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
@@ -228,6 +262,10 @@ async function removeCategory(category: Category) {
 }
 
 .category-dialog {
+  width: 420px;
+}
+
+.delete-category-dialog {
   width: 420px;
 }
 </style>

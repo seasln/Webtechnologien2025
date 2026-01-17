@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type {Category} from "../domain/category.ts";
 import type {TodoEntry} from "../domain/todo-entry.ts";
-import {updateTodo} from "../services/todo-service.ts";
+import {deleteTodo, updateTodo} from "../services/todo-service.ts";
 import {PriorityEnum} from "../domain/priority.enum.ts";
 import {ref} from "vue";
 
@@ -15,6 +15,7 @@ const emit = defineEmits<{
 }>();
 
 const dialog = ref(false);
+const deleteDialog = ref(false);
 const valid = ref(false);
 const titleError = ref('');
 const descriptionError = ref('');
@@ -112,6 +113,24 @@ function closeDialog() {
   dialog.value = false;
 }
 
+function openDeleteDialog() {
+  deleteDialog.value = true;
+}
+
+function closeDeleteDialog() {
+  deleteDialog.value = false;
+}
+
+async function confirmDelete() {
+  if (props.todo.id == null) {
+    deleteDialog.value = false;
+    return;
+  }
+  await deleteTodo(props.todo.id);
+  deleteDialog.value = false;
+  emit('updatedTodo');
+}
+
 </script>
 
 <template>
@@ -138,7 +157,7 @@ function closeDialog() {
     <v-card-text v-if="!!todo.description">{{ todo.description }}</v-card-text>
 
     <v-card-actions class="actions">
-      <v-btn color="red">Löschen</v-btn>
+      <v-btn color="red" @click="openDeleteDialog">Löschen</v-btn>
       <v-btn @click="openEditDialog">Bearbeiten</v-btn>
     </v-card-actions>
   </v-card>
@@ -210,6 +229,29 @@ function closeDialog() {
 
     </v-card>
   </v-dialog>
+
+  <v-dialog class="delete-todo-dialog"
+            v-model="deleteDialog"
+  >
+    <v-card>
+      <v-card-title>Todo löschen</v-card-title>
+      <v-card-text>
+        Möchtest du diese Aufgabe dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+      </v-card-text>
+      <v-card-actions>
+        <v-btn
+            text="Abbrechen"
+            type="button"
+            @click="closeDeleteDialog"
+        ></v-btn>
+        <v-btn
+            color="red"
+            text="Löschen"
+            @click="confirmDelete"
+        ></v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
@@ -253,5 +295,9 @@ function closeDialog() {
 
 .new-todo-dialog {
   width: 400px;
+}
+
+.delete-todo-dialog {
+  width: 420px;
 }
 </style>

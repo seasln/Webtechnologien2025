@@ -2,6 +2,7 @@ package de.htw.berlin.todo_app_backend.service;
 
 import de.htw.berlin.todo_app_backend.domain.Category;
 import de.htw.berlin.todo_app_backend.repository.CategoryRepository;
+import de.htw.berlin.todo_app_backend.repository.ToDoEntryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +22,9 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryRepository repo;
+
+    @Mock
+    private ToDoEntryRepository todoEntryRepository;
 
     @InjectMocks
     private CategoryService service;
@@ -77,6 +81,7 @@ class CategoryServiceTest {
     void delete_delegatesToRepository() {
         service.delete(5L);
 
+        verify(todoEntryRepository).clearCategoryFromTodos(5L);
         verify(repo).deleteById(5L);
     }
 }

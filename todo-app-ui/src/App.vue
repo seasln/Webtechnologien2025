@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import {ref} from 'vue';
+import {useSnackbar} from '@/util/useSnackbar';
 
 const drawer = ref(true);
+const {snackbarState} = useSnackbar();
 </script>
 
 <template>
@@ -21,6 +23,13 @@ const drawer = ref(true);
         <router-view></router-view>
       </div>
     </v-main>
+    <v-snackbar
+        v-model="snackbarState.open"
+        :color="snackbarState.color"
+        :timeout="snackbarState.timeout"
+    >
+      {{ snackbarState.message }}
+    </v-snackbar>
   </v-app>
 </template>
 

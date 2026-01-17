@@ -2,6 +2,7 @@
 import {onMounted, ref} from "vue";
 import type {Category} from "../domain/category.ts";
 import {addCategory, deleteCategory, getCategories, updateCategory} from "../services/category-service.ts";
+import {useSnackbar} from "@/util/useSnackbar";
 
 const categories = ref<Category[]>([]);
 const dialog = ref(false);
@@ -16,13 +17,18 @@ const emptyForm = {
 const categoryForm = ref({...emptyForm});
 const editingId = ref<number | null>(null);
 const categoryToDelete = ref<Category | null>(null);
+const {showSnackbar, showError} = useSnackbar();
 
 onMounted(() => {
   fetchCategories()
 })
 
 async function fetchCategories() {
-  categories.value = await getCategories()
+  try {
+    categories.value = await getCategories()
+  } catch (error) {
+    showError('Kategorien konnten nicht geladen werden.');
+  }
 }
 
 function openCreateDialog() {
@@ -80,16 +86,21 @@ async function saveCategory() {
     colorHex: categoryForm.value.colorHex.trim(),
   };
 
-  if (isEditing.value) {
-    payload.id = editingId.value ?? undefined;
-    await updateCategory(payload);
-  } else {
-    await addCategory(payload);
+  try {
+    if (isEditing.value) {
+      payload.id = editingId.value ?? undefined;
+      await updateCategory(payload);
+      showSnackbar('Kategorie wurde aktualisiert.');
+    } else {
+      await addCategory(payload);
+      showSnackbar('Kategorie wurde erstellt.');
+    }
+    dialog.value = false;
+    resetForm();
+    await fetchCategories()
+  } catch (error) {
+    showError('Kategorie konnte nicht gespeichert werden.');
   }
-
-  dialog.value = false;
-  resetForm();
-  await fetchCategories()
 }
 
 async function removeCategory(category: Category) {
@@ -108,9 +119,14 @@ async function confirmDelete() {
     closeDeleteDialog();
     return;
   }
-  await deleteCategory(category.id);
-  closeDeleteDialog();
-  await fetchCategories();
+  try {
+    await deleteCategory(category.id);
+    closeDeleteDialog();
+    showSnackbar('Kategorie wurde gelöscht.');
+    await fetchCategories();
+  } catch (error) {
+    showError('Kategorie konnte nicht gelöscht werden.');
+  }
 }
 </script>
 
@@ -208,7 +224,7 @@ async function confirmDelete() {
             v-model="deleteDialog"
   >
     <v-card>
-      <v-card-title>Kategorie loeschen</v-card-title>
+      <v-card-title>Kategorie löschen</v-card-title>
       <v-card-text>
         Möchtest du diese Kategorie dauerhaft löschen? Diese Aktion kann nicht rückgängig gemacht werden.
       </v-card-text>

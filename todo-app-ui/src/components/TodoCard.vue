@@ -4,6 +4,7 @@ import type {TodoEntry} from "../domain/todo-entry.ts";
 import {deleteTodo, updateTodo} from "../services/todo-service.ts";
 import {PriorityEnum} from "../domain/priority.enum.ts";
 import {ref} from "vue";
+import {useSnackbar} from "@/util/useSnackbar";
 
 const props = defineProps<{
   todo: TodoEntry
@@ -35,6 +36,7 @@ const priorityItems = Object.values(PriorityEnum).map((value) => ({
   value,
   label: priorityMeta[value].label,
 }));
+const {showSnackbar, showError} = useSnackbar();
 
 function formatDueDate(value: string | Date | null | undefined) {
   if (!value) {
@@ -63,8 +65,13 @@ function formatDateParts(date: Date) {
 }
 
 async function todoUpdate() {
-  await updateTodo(props.todo);
-  emit('updatedTodo');
+  try {
+    await updateTodo(props.todo);
+    emit('updatedTodo');
+    showSnackbar('Todo wurde aktualisiert.');
+  } catch (error) {
+    showError('Todo konnte nicht aktualisiert werden.');
+  }
 }
 
 function openEditDialog() {
@@ -79,19 +86,16 @@ function openEditDialog() {
 }
 
 function validateForm(): boolean {
-  titleError.value = '';
   descriptionError.value = '';
-  
+
   if (todoForm.value.title && todoForm.value.title.length > 25) {
-    titleError.value = 'Maximum of 25 characters allowed';
     return false;
   }
-  
+
   if (todoForm.value.description && todoForm.value.description.length > 200) {
-    descriptionError.value = 'Maximum of 200 characters allowed';
     return false;
   }
-  
+
   return true;
 }
 
@@ -99,14 +103,19 @@ async function saveEdit() {
   if (!validateForm()) {
     return;
   }
-  
+
   dialog.value = false;
   const updatedTodo: TodoEntry = {
     ...props.todo,
     ...todoForm.value,
   };
-  await updateTodo(updatedTodo);
-  emit('updatedTodo');
+  try {
+    await updateTodo(updatedTodo);
+    emit('updatedTodo');
+    showSnackbar('Todo wurde gespeichert.');
+  } catch (error) {
+    showError('Todo konnte nicht gespeichert werden.');
+  }
 }
 
 function closeDialog() {
@@ -126,9 +135,14 @@ async function confirmDelete() {
     deleteDialog.value = false;
     return;
   }
-  await deleteTodo(props.todo.id);
-  deleteDialog.value = false;
-  emit('updatedTodo');
+  try {
+    await deleteTodo(props.todo.id);
+    deleteDialog.value = false;
+    emit('updatedTodo');
+    showSnackbar('Todo wurde gelöscht.');
+  } catch (error) {
+    showError('Todo konnte nicht gelöscht werden.');
+  }
 }
 
 </script>
@@ -177,18 +191,16 @@ async function confirmDelete() {
               required
               maxlength="25"
               :error-messages="titleError"
-              :hint="todoForm.title.length === 25 ? 'Character limit reached' : ''"
+              :hint="todoForm.title.length === 25 ? 'Maximal 25 Zeichen erlaubt' : ''"
               persistent-hint
-              @input="titleError = todoForm.title.length > 25 ? 'Maximum of 25 characters allowed' : ''"
           ></v-text-field>
           <v-textarea
               v-model="todoForm.description"
               label="Beschreibung"
               maxlength="200"
               :error-messages="descriptionError"
-              :hint="todoForm.description && todoForm.description.length === 200 ? 'Character limit reached' : ''"
+              :hint="todoForm.description && todoForm.description.length === 200 ? 'Maximal 200 Zeichen erlaubt' : ''"
               persistent-hint
-              @input="descriptionError = todoForm.description && todoForm.description.length > 200 ? 'Maximum of 200 characters allowed' : ''"
           ></v-textarea>
           <v-text-field
               v-model="todoForm.dueDate"

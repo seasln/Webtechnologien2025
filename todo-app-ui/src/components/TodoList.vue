@@ -6,6 +6,7 @@ import {addTodo, getTodos} from "../services/todo-service.ts";
 import {onMounted, ref, watch} from "vue";
 import TodoCard from "../components/TodoCard.vue";
 import {PriorityEnum} from "../domain/priority.enum.ts";
+import {useSnackbar} from "@/util/useSnackbar";
 
 const todos = ref<TodoEntry[]>([]);
 const filteredTodos = ref<TodoEntry[]>([]);
@@ -32,6 +33,7 @@ const emptyTodo = {
   category: null as Category | null,
 }
 const todoForm = ref({...emptyTodo});
+const {showSnackbar, showError} = useSnackbar();
 
 onMounted(async () => {
   await Promise.all([getTodoEntries(), fetchCategories()])
@@ -42,12 +44,20 @@ watch([todos, filterSelection], () => {
 }, {immediate: true});
 
 async function getTodoEntries() {
-  todos.value = await getTodos()
-  applyFilters();
+  try {
+    todos.value = await getTodos()
+    applyFilters();
+  } catch (error) {
+    showError('Todos konnten nicht geladen werden.');
+  }
 }
 
 async function fetchCategories() {
-  categories.value = await getCategories()
+  try {
+    categories.value = await getCategories()
+  } catch (error) {
+    showError('Kategorien konnten nicht geladen werden.');
+  }
 }
 
 function openNewTodoDialog() {
@@ -59,12 +69,10 @@ function validateForm(): boolean {
   descriptionError.value = '';
 
   if (todoForm.value.title && todoForm.value.title.length > 25) {
-    titleError.value = 'Maximum of 25 characters allowed';
     return false;
   }
 
   if (todoForm.value.description && todoForm.value.description.length > 200) {
-    descriptionError.value = 'Maximum of 200 characters allowed';
     return false;
   }
 
@@ -80,18 +88,20 @@ async function createTodo() {
   const newTodo: TodoEntry = {
     ...todoForm.value
   }
-  await addTodo(newTodo); // Rufe Post Route vom Backend auf
-  getTodoEntries()
+  try {
+    await addTodo(newTodo); // Rufe Post Route vom Backend auf
+    showSnackbar('Todo wurde erstellt.');
+    closeDialog()
+    getTodoEntries()
+  } catch (error) {
+    showError('Todo konnte nicht erstellt werden.');
+  }
 }
 
 function onDialogUpdate(value: boolean) {
   if (!value) {
     todoForm.value = {...emptyTodo};
   }
-}
-
-function isTodoValid() {
-  return !todoForm.value.title.trim() || todoForm.value.title.length > 25 || (todoForm.value.description && todoForm.value.description.length > 200);
 }
 
 function closeDialog() {
@@ -195,18 +205,16 @@ function toDate(value: unknown): Date | null {
               required
               maxlength="25"
               :error-messages="titleError"
-              :hint="todoForm.title.length === 25 ? 'Character limit reached' : ''"
+              :hint="todoForm.title.length === 25 ? 'Maximal 25 Zeichen erlaubt' : ''"
               persistent-hint
-              @input="titleError = todoForm.title.length > 25 ? 'Maximum of 25 characters allowed' : ''"
           ></v-text-field>
           <v-textarea
               v-model="todoForm.description"
               label="Beschreibung"
               maxlength="200"
               :error-messages="descriptionError"
-              :hint="todoForm.description && todoForm.description.length === 200 ? 'Character limit reached' : ''"
+              :hint="todoForm.description && todoForm.description.length === 200 ? 'Maximal 200 Zeichen erlaubt' : ''"
               persistent-hint
-              @input="descriptionError = todoForm.description && todoForm.description.length > 200 ? 'Maximum of 200 characters allowed' : ''"
           ></v-textarea>
           <v-text-field
               v-model="todoForm.dueDate"
@@ -276,4 +284,3 @@ function toDate(value: unknown): Date | null {
   gap: 12px;
 }
 </style>
-

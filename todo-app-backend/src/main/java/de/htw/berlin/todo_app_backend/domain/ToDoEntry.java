@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -31,12 +31,12 @@ public class ToDoEntry {
     @JoinColumn(name = "category_id")
     private Category category;
     @Column(nullable = false, updatable = false)
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @PrePersist
     void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDate.now();
+            createdAt = LocalDateTime.now();
         }
     }
 }

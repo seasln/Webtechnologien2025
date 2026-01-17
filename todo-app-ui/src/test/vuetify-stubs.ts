@@ -24,6 +24,7 @@ export const vuetifyStubs = {
     VSelect: true,
     VDateInput: true,
     VCheckbox: true,
+    VProgressLinear: true,
     VColorPicker: true,
     VSpacer: true,
 }

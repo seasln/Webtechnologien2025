@@ -33,6 +33,12 @@ const priorityItems = Object.values(PriorityEnum).map((value) => ({
   value,
   label: priorityMeta[value].label,
 }));
+const sortItems = [
+  {value: 'createdAt', title: 'Erstellt'},
+  {value: 'dueDate', title: 'Fällig'},
+  {value: 'priority', title: 'Priorität'},
+  {value: 'title', title: 'Titel'},
+];
 const emptyTodo = {
   title: '',
   description: '',
@@ -309,14 +315,17 @@ function toDate(value: unknown): Date | null {
           <v-btn value="high">Hohe Priorität</v-btn>
         </v-btn-toggle>
       </div>
+    <div class="filter-actions">
       <div class="sort-controls">
-        <span class="sort-label">Sortieren</span>
-        <v-btn-toggle v-model="sortSelection" mandatory class="sort-toggle">
-          <v-btn value="createdAt">Erstellt</v-btn>
-          <v-btn value="dueDate">Fällig</v-btn>
-          <v-btn value="priority">Priorität</v-btn>
-          <v-btn value="title">Titel</v-btn>
-        </v-btn-toggle>
+        <v-select
+            v-model="sortSelection"
+            :items="sortItems"
+            label="Sortieren"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="sort-select"
+        ></v-select>
         <v-btn
             icon
             size="small"
@@ -339,6 +348,7 @@ function toDate(value: unknown): Date | null {
           class="search-input"
       ></v-text-field>
     </div>
+  </div>
 
     <div v-if="totalTodos" class="progress-row">
       <div class="progress-label">
@@ -460,9 +470,6 @@ function toDate(value: unknown): Date | null {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
 }
 
 .filter-toggle {
@@ -476,6 +483,13 @@ function toDate(value: unknown): Date | null {
   font-size: 0.75rem;
 }
 
+.filter-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .sort-label {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.65);
@@ -486,24 +500,15 @@ function toDate(value: unknown): Date | null {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.sort-toggle {
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.sort-toggle :deep(.v-btn) {
-  min-width: 0;
-  padding: 0 8px;
-  font-size: 0.75rem;
 }
 
 .sort-direction {
   min-width: 32px;
+}
+
+.sort-select {
+  min-width: 160px;
+  max-width: 200px;
 }
 
 .progress-row {

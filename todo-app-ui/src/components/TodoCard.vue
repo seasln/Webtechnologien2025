@@ -39,22 +39,42 @@ const priorityItems = Object.values(PriorityEnum).map((value) => ({
 const {showSnackbar, showError} = useSnackbar();
 
 function formatDueDate(value: string | Date | null | undefined) {
-  if (!value) {
+  const parsed = parseDate(value);
+  if (!parsed) {
     return '';
+  }
+  return formatDateParts(parsed);
+}
+
+function formatDateTime(value: string | Date | null | undefined) {
+  const parsed = parseDate(value);
+  if (!parsed) {
+    return '';
+  }
+  const hours = String(parsed.getHours()).padStart(2, '0');
+  const minutes = String(parsed.getMinutes()).padStart(2, '0');
+  return `${formatDateParts(parsed)} ${hours}:${minutes}`;
+}
+
+function parseDate(value: string | Date | null | undefined) {
+  if (!value) {
+    return null;
+  }
+  if (value instanceof Date) {
+    return value;
   }
   if (typeof value === 'string') {
     const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (isoMatch) {
       const [, year, month, day] = isoMatch;
-      return `${day}.${month}.${year}`;
+      return new Date(Number(year), Number(month) - 1, Number(day));
     }
     const parsed = new Date(value);
     if (!Number.isNaN(parsed.getTime())) {
-      return formatDateParts(parsed);
+      return parsed;
     }
-    return value;
   }
-  return formatDateParts(value);
+  return null;
 }
 
 function formatDateParts(date: Date) {
@@ -164,7 +184,7 @@ async function confirmDelete() {
       <span class="category-dot" :style="{ backgroundColor: todo.category.colorHex || '#000000' }"></span>
       <span>{{ todo.category.name }}</span>
     </v-card-subtitle>
-    <v-card-subtitle v-if="!!todo.createdAt">Erstellt am: {{ formatDueDate(todo.createdAt) }}</v-card-subtitle>
+    <v-card-subtitle v-if="!!todo.createdAt">Erstellt am: {{ formatDateTime(todo.createdAt) }}</v-card-subtitle>
     <v-card-subtitle v-if="!!todo.dueDate">Fällig am: {{ formatDueDate(todo.dueDate) }}</v-card-subtitle>
     <v-card-subtitle v-if="todo.priority" class="priority-row">
       Priorität: {{ priorityMeta[todo.priority].label }}

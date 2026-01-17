@@ -16,11 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,7 +56,7 @@ class TodoEntryControllerIntegrationTest {
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.title").value("Buy milk"))
                 .andExpect(jsonPath("$.priority").value("HIGH"))
-                .andExpect(jsonPath("$.createdAt").value(notNullValue()))
+                .andExpect(jsonPath("$.createdAt").value(matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*$")))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -107,7 +104,7 @@ class TodoEntryControllerIntegrationTest {
                 .andExpect(jsonPath("$.description").value("Updated"))
                 .andExpect(jsonPath("$.done").value(true))
                 .andExpect(jsonPath("$.priority").value("MEDIUM"))
-                .andExpect(jsonPath("$.createdAt").value(notNullValue()));
+                .andExpect(jsonPath("$.createdAt").value(matchesPattern("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*$")));
 
         ToDoEntry refreshed = repository.findById(saved.getId()).orElseThrow();
         assertThat(refreshed.getTitle()).isEqualTo("New");
